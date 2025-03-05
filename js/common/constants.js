@@ -1,0 +1,1 @@
+const ROOT_API = 'http://localhost:5170/api'

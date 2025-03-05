@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interface Design</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            flex-direction: column; /* Điều chỉnh để các phần tử nằm theo chiều dọc */
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        h1 {
+            width: 100%;
+            text-align: center;
+            margin-bottom: 30px; /* Thêm khoảng cách dưới tiêu đề */
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 50px;
+            width: 100%;
+            max-width: 800px;
+        }
+
+        .card {
+            background-color: white;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            transition: transform 0.3s ease;
+            text-decoration: none; /* Loại bỏ gạch chân mặc định của thẻ a */
+        }
+
+        .card:hover {
+            transform: scale(1.1);
+        }
+
+        .card img {
+            width: 130px;
+            height: 130px;
+            margin-bottom: 10px;
+        }
+
+        .card p {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #333;
+        }
+
+    </style>
+</head>
+<body>
+    <h1>Ôn thi giấy phép xe máy</h1>
+    <div class="container">
+        <a href="hoc-ly-thuyet.html" class="card">
+            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT16grhJ4JRdTUCGIKKzekwFvIXvPJ-cxyP6g&s" alt="Học lý thuyết">
+            <p>Học lý thuyết</p>
+        </a>
+        <a href="bien-bao.html" class="card">
+            <img src="https://vnn-imgs-a1.vgcloud.vn/cdn.baogiaothong.vn/upload/images/2020-2/article_img/2020-05-23/bien-bao-cam-111a-1590225675-width224height224.jpg" alt="Biển báo">
+            <p>Biển báo</p>
+        </a>
+        <a href="thi-sat-hach.html" class="card">
+            <img src="https://cdn-icons-png.flaticon.com/512/326/326909.png" alt="Thi sát hạch">
+            <p>Thi sát hạch</p>
+        </a>
+        <a href="meo-thi.html" target="_blank" class="card">
+            <img src="https://cdn-icons-png.flaticon.com/256/3771/3771432.png" alt="Mẹo thi">
+            <p>Mẹo thi</p>
+        </a>
+        <a href="https://www.youtube.com/watch?v=LdCsf3tFne8" target="_blank" class="card">
+            <img src="https://sviet.net/wp-content/uploads/2023/09/Huong-dan-thi-bang-lai-xe-vong-so-8.jpg" alt="Sa hình">
+            <p>Sa hình</p>
+        </a>
+        <a href="cau-sai.html" class="card">
+            <img src="error-icon.png" alt="Các câu sai">
+            <p>Các câu sai</p>
+        </a>
+    </div>
+</body>
+</html>

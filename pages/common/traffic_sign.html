@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Biển Báo Giao Thông</title>
+    <link rel="stylesheet" href="../../css/traffic_sign.css">
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+
+<body>
+
+    <div class="container">
+        <h1>Biển Báo Giao Thông</h1>
+
+        <!-- Tab Navigation -->
+        <div class="tabs" id="tabs">
+            <!-- <div class="tab active-tab" id="tab-ban-cam" onclick="showTab('ban-cam')">Biển báo cấm</div>
+            <div class="tab" id="tab-hieu-lenh" onclick="showTab('hieu-lenh')">Biển hiệu lệnh</div>
+            <div class="tab" id="tab-chi-dan" onclick="showTab('chi-dan')">Biển chỉ dẫn</div>
+            <div class="tab" id="tab-nguy-hiem" onclick="showTab('nguy-hiem')">Biển báo nguy hiểm</div> -->
+        </div>
+
+        <!-- Tab Content -->
+        <div class="content" id="content">
+        </div>
+    </div>
+
+    <script>
+        // function showTab(tab) {
+        //     // Hide all content sections
+        //     document.getElementById('content-ban-cam').style.display = 'none';
+        //     document.getElementById('content-hieu-lenh').style.display = 'none';
+        //     document.getElementById('content-chi-dan').style.display = 'none';
+        //     document.getElementById('content-nguy-hiem').style.display = 'none';
+
+        //     // Remove 'active-tab' class from all tabs
+        //     document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active-tab'));
+
+        //     // Show the selected tab content
+        //     document.getElementById('content-' + tab).style.display = 'block';
+
+        //     // Add 'active-tab' class to the clicked tab
+        //     document.getElementById('tab-' + tab).classList.add('active-tab');
+        // }
+        
+        // axios.get(CATEGORY_API + "getCategoryByType/traffic_sign")
+        axios.get('http://localhost:5170/api/Categories/getCategoryByType/traffic_sign')
+            .then(response => {
+                const data = response.data;
+                const tabs = document.getElementById('tabs');
+                tabs.innerHTML = '';
+
+                data.forEach(category => {
+                    const tab = document.createElement('div');
+                    tab.classList.add('tab');
+                    tab.innerText = category.categoryName;
+                    tab.onclick = () => showTab(category.categoryId);
+
+                    tabs.appendChild(tab);
+                });
+
+
+                console.log(response.data); // Xử lý dữ liệu API
+            })
+            .catch(error => {
+                console.error('Error:', error); // Xử lý lỗi
+            });
+
+        function showTab(categoryId) {
+            axios.get('http://localhost:5170/api/TrafficSigns/getByCategory/' + categoryId)
+                .then(response => {
+                    const data = response.data;
+                    const content = document.getElementById('content');
+                    content.innerHTML = '';
+
+                    data.forEach(sign => {
+                        const signElement = document.createElement('div');
+                        signElement.classList.add('warning-sign');
+                        signElement.innerHTML = `
+                            <img src="${sign.imageUrl}" alt="${sign.trafficSignTitle}">
+                            <div>
+                                <h3>${sign.trafficSignTitle}</h3>
+                                <p class="description">${sign.trafficSignContent}</p>
+                            </div>
+                        `;
+
+                        content.appendChild(signElement);
+                    });
+
+                    console.log(response.data); // Xử lý dữ liệu API
+                })
+                .catch(error => {
+                    console.error('Error:', error); // Xử lý lỗi
+                });
+        }
+    </script>
+    <script src="../../js/common/traffic_sign.js"></script>
+</body>
+
+</html>
