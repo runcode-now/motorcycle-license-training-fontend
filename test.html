@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo JS call API</title>
+    <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
+    <style>
+        /* Định dạng bảng */
+        table {
+            width: 70%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background-color: #fff;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        /* Định dạng tiêu đề bảng */
+        th {
+            background-color: #007bff;
+            color: white;
+            font-weight: bold;
+            padding: 12px;
+            text-align: left;
+        }
+
+        /* Định dạng ô dữ liệu */
+        td {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        /* Căn giữa số trong cột */
+        td:nth-child(1),
+        td:nth-child(3),
+        td:nth-child(4) {
+            text-align: center;
+        }
+
+        /* Hover hiệu ứng */
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        /* Định dạng hàng chẵn lẻ khác nhau */
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        /* Bo tròn hình ảnh trong bảng */
+        td img {
+            width: 60px;
+            height: 60px;
+            border-radius: 5px;
+            object-fit: cover;
+        }
+
+        button {
+            background-color: #4CAF50;
+            /* Màu xanh lá */
+            color: white;
+            /* Chữ màu trắng */
+            padding: 10px 20px;
+            /* Kích thước */
+            border: none;
+            /* Không viền */
+            border-radius: 5px;
+            /* Bo tròn */
+            cursor: pointer;
+            /* Đổi con trỏ */
+            font-size: 16px;
+            /* Cỡ chữ */
+            transition: background-color 0.3s ease;
+            /* Hiệu ứng hover */
+        }
+
+        button:hover {
+            background-color: #45a049;
+            /* Màu tối hơn khi hover */
+        }
+    </style>
+</head>
+
+<body>
+    <input type="text" id="productId" placeholder="Product Id" required>
+    <input type="text" id="productName" placeholder="Product Name" required>
+    <input type="number" id="productPrice" placeholder="Price" required>
+    <input type="number" id="productQuantity" placeholder="Quantity" required>
+    <input type="text" id="image" placeholder="Image" required>
+    <input type="text" id="categoryId" placeholder="Category ID" required>
+
+    <p id="result"></p>
+    <br />
+    <button id="btn-load" >Load</button>
+    <button id="add-btn" >Add Product</button>
+    <button id="update-btn" >Update</button>
+    <button id="delete-btn" >Delete</button>
+    <br />
+    <br />
+    <table id="products">
+        <thead>
+            <tr>
+                <th>ProductId</th>
+                <th>Name</th>
+                <th>Price ($)</th>
+                <th>Quantity</th>
+                <th>Image</th>
+                <th>Category</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+
+    <script>
+        $('#btn-load').click(function(){
+            $.ajax({
+                url: "http://localhost:5270/Demo/product",
+                method: 'GET',
+                contentType: "application/json",
+                success: function(respone){
+                    console.log(respone)
+                    // let data = respone.data;
+                    let html = '';
+                    respone.forEach(element => {
+                        html += `<tr >
+                                    <td>${element.productId}</td>
+                                    <td>${element.productName}</td>
+                                    <td>${element.unitPrice}</td>
+                                    <td>${element.unitsInStock}</td>
+                                    <td>${element.image}</td>
+                                    <td>${element.category.categoryName}</td>
+                                    <td><a href='#' onclick='loadform(${JSON.stringify(element)})'>Load to form</a></td>
+                                </tr>`
+                    });
+                    $('#products tbody').html(html)
+                },
+                error: function (xhr, status, error){
+                    console.log(xhr.responseText);
+                    console.log(status);
+                    console.log(error)
+                }
+            })
+        })
+
+        function loadform(element){
+            console.log(element)
+            $('#productId').val(element.productId)
+            $('#productName').val(element.productName)
+            $('#productPrice').val(element.unitPrice)
+            $('#productQuantity').val(element.unitsInStock)
+            $('#image').val(element.image)
+            $('#categoryId').val(element.category.categoryId)
+        }
+
+        $('#add-btn').click(function(){
+            const data = {
+                productName: $('#productName').val(),
+                unitPrice: $('#productPrice').val(),
+                unitsInStock: $('#productQuantity').val(),
+                image: $('#image').val(),
+                categoryId: $('#categoryId').val()
+            }
+
+            console.log(`ass`)
+            $.ajax({
+                url: "http://localhost:5270/Demo/product",
+                method: 'POST',
+                contentType: "application/json",
+                headers: {
+                    'Authorization' : 'Bearer ' + 'JWT'
+                },
+                data: JSON.stringify(data),
+                success: function(respone){
+                    alert('add successfully')
+                },
+                error: function (xhr, status, error){
+                    console.log(xhr.responseText);
+                    console.log(status);
+                    console.log(error)
+                }
+            })
+
+            $('#btn-load').click()
+        })
+
+        $('#update-btn').click(function(){
+            const data = {
+                productId: $('#productId').val(),
+                productName: $('#productName').val(),
+                unitPrice: $('#productPrice').val(),
+                unitsInStock: $('#productQuantity').val(),
+                image: $('#image').val(),
+                categoryId: $('#categoryId').val()
+            }
+            console.log(data)
+            $.ajax({
+                url: "http://localhost:5270/Demo/product" + '/' + $('#productId').val(),
+                method: 'PUT',
+                contentType: "application/json",
+                data: JSON.stringify(data),
+                success: function(respone){
+                    alert('update successfully')
+                },
+                error: function (xhr, status, error){
+                    console.log(xhr.responseText);
+                    console.log(status);
+                    console.log(error)
+                }
+            })
+        })
+
+        $('#delete-btn').click(function(){
+            $.ajax({
+                url: "http://localhost:5270/Demo/product" + '/' + $('#productId').val(),
+                method: 'DELETE',
+                contentType: "application/json",
+                success: function(respone){
+                    alert('delete successfully')
+                },
+                error: function (xhr, status, error){
+                    console.log(xhr.responseText);
+                    console.log(status);
+                    console.log(error)
+                }
+            })
+        })
+    </script>
+
+</body>
+
+</html>

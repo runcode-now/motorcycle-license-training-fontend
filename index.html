@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
+</head>
+<body>
+    <!-- <button id="btn" onclick="handleEvent()">Click me</button> -->
+    <button id="btn">Click me</button>
+    <button id="add">add</button>
+    <button id="update">update</button>
+    <!-- <pre id="output"></pre> -->
+     <ul id="list">
+     </ul>
+    <script>
+        // async function handleEvent() {
+        //     const url = 'http://localhost:5270/Demo/product';
+        //     try{
+        //         const respone = await fetch(url, {
+        //             method: 'GET',
+        //             headers:{
+        //                 'Content-Type': 'application/json'
+        //             }
+        //         });
+
+        //         if (!respone.ok){
+        //             throw new Error('HTTP Error')
+        //         }
+        //         const data = await respone.json();
+        //         document.getElementById('output').textContent = JSON.stringify(data, null, 2)
+        //     }catch(e){
+        //         console.log(e);
+        //     }
+        // }
+        
+        $(document).ready(function(){
+            const data = {
+                productName: "strig",
+                unitPrice: 12,
+                unitsInStock: 0,
+                image: "abc",
+                categoryId: 1
+            }
+
+            $(`#btn`).click(function(){
+                $.ajax({
+                    url: "http://localhost:5270/Demo/product",
+                    method: 'GET',
+                    dataType: "json",
+                    success: function(data){
+                        $('#list').empty();
+                        data.forEach(element => {
+                            console.log(element)
+                            $('#list').append(`<li>${element.productId} - ${element.productName} </li>`)
+                        });
+                    },
+                    error: function (xhr, status, error){
+                        console.log(xhr.responseText);
+                        console.log(status);
+                        console.log(error)
+                    }
+
+                })
+                console.log("dsadas")
+            })
+
+            $('#btn').click(function(){
+                console.log(`ass`)
+                $.ajax({
+                    url: "http://localhost:5270/Demo/product",
+                    method: 'POST',
+                    contentType: "application/json",
+                    data: JSON.stringify(data),
+                    success: function(respone){
+                        alert('add successfully')
+                    },
+                    error: function (xhr, status, error){
+                        console.log(xhr.responseText);
+                        console.log(status);
+                        console.log(error)
+                    }
+                })
+            })
+
+            $(`#update`).click(function(){
+                $.ajax({
+                    url: "http://localhost:5270/Demo/product/1" ,
+                    method: 'PUT',
+                    dataType: "json",
+                    success: function(data){
+                        $('#list').empty();
+                        data.forEach(element => {
+                            console.log(element)
+                            $('#list').append(`<li>${element.productId} - ${element.productName} </li>`)
+                        });
+                    },
+                    error: function (xhr, status, error){
+                        console.log(xhr.responseText);
+                        console.log(status);
+                        console.log(error)
+                    }
+
+                })
+                console.log("dsadas")
+            })
+        })
+    </script>
+</body>
+</html>

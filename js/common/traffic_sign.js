@@ -1,33 +1,50 @@
-// import axios from 'axios';
+import { ROOT_API } from './constants.js';
 
-// // let TRAFFIC_SIGN_API = ROOT_API + '/Categories';
-// // let CATEGORY_API = ROOT_API + '/Categories';
+axios.get(`${ROOT_API}/api/Categories/getCategoryByType/traffic_sign`)
+    .then(response => {
+        const data = response.data;
+        const tabs = document.getElementById('tabs');
+        tabs.innerHTML = '';
 
-// // http://localhost:5170/api/Categories/getCategoryByType/traffic_sign
+        data.forEach(category => {
+            const tab = document.createElement('div');
+            tab.classList.add('tab');
+            tab.innerText = category.categoryName;
+            tab.onclick = () => showTab(category.categoryId);
 
+            tabs.appendChild(tab);
+        });
 
-// console.log('dsdsa')
-// // axios.get(CATEGORY_API + "getCategoryByType/traffic_sign")
-// axios.get('http://localhost:5170/api/Categories/getCategoryByType/traffic_sign')
-//     .then(response => {
-//         console.log(response);
+        console.log(response.data); 
+    })
+    .catch(error => {
+        console.error('Error:', error); // Xử lý lỗi
+    });
 
-//         const data = response.data;
-//         const tabs = document.getElementById('tabs');
-//         tabs.innerHTML = '';
+function showTab(categoryId) {
+    axios.get(`${ROOT_API}/api/TrafficSigns/getByCategory/${categoryId}`)
+        .then(response => {
+            const data = response.data;
+            const content = document.getElementById('content');
+            content.innerHTML = '';
 
-//         data.forEach(category => {
-//             const tab = document.createElement('div');
-//             tab.classList.add('tab');
-//             tab.innerText = category.name;
-//             tab.onclick = () => showTab(category.name.toLowerCase().replace(' ', '-'));
+            data.forEach(sign => {
+                const signElement = document.createElement('div');
+                signElement.classList.add('warning-sign');
+                signElement.innerHTML = `
+                            <img src="${sign.imageUrl}" alt="${sign.trafficSignTitle}">
+                            <div>
+                                <h3>${sign.trafficSignTitle}</h3>
+                                <p class="description">${sign.trafficSignContent}</p>
+                            </div>
+                        `;
 
-//             tabs.appendChild(tab);
-//         });
+                content.appendChild(signElement);
+            });
 
-
-//         console.log(response.data); // Xử lý dữ liệu API
-//     })
-//     .catch(error => {
-//         console.error('Error:', error); // Xử lý lỗi
-//     });
+            console.log(response.data);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+}
