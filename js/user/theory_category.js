@@ -9,7 +9,8 @@ axios.get(`${ROOT_API}/api/Categories/getCategoryByType/theory`)
 
         data.forEach(category => {
             const link = document.createElement('a');
-            link.href = `pages/theory.html?categoryId=${category.categoryId}`;
+            link.href = `/pages/user/question.html?categoryId=${category.categoryId}`;
+            // link.href = `/pages/user/theory_question.html`;
             link.target = "_blank";
             link.classList.add('card');
 

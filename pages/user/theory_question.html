@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Khái Niệm và Quy Tắc GPLX</title>
+    <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background-color: #f0f2f5;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1100px;
+            background-color: #ffffff;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+            display: flex;
+            flex-direction: row;
+            gap: 20px;
+            position: relative;
+        }
+
+        .content-left {
+            width: 70%;
+        }
+
+        .content-right {
+            width: 30%;
+            padding: 15px;
+            border-radius: 12px;
+            position: sticky;
+            top: 20px;
+            height: fit-content;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            text-align: center;
+            margin-bottom: 25px;
+            color: #1a73e8;
+            font-weight: 600;
+        }
+
+        .question-section h2 {
+            font-size: 1.3rem;
+            color: #333;
+            margin-bottom: 15px;
+            font-weight: 500;
+        }
+
+        .question-section p {
+            font-size: 0.95rem;
+            color: #555;
+            line-height: 1.5;
+        }
+
+        .image-section img {
+            width: 100%;
+            border-radius: 10px;
+            margin: 20px 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .answer-options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .answer-option {
+            background-color: #f8f9fa;
+            padding: 15px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            color: #333;
+            border: 1px solid #e0e0e0;
+            transition: all 0.3s ease;
+        }
+
+        .answer-option:hover {
+            background-color: #e8f0fe;
+            border-color: #1a73e8;
+        }
+
+        .answer-option.selected {
+            background-color: #1a73e8;
+            color: white;
+            border-color: #1a73e8;
+        }
+
+        .answer-option.correct {
+            background-color: #34c759;
+            color: white;
+            border-color: #34c759;
+        }
+
+        .answer-option.incorrect {
+            background-color: #ff4444;
+            color: white;
+            border-color: #ff4444;
+        }
+
+        .explanation {
+            background-color: #e8f0fe; /* Đổi màu nền về xanh nhạt để dễ đọc */
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-top: 25px;
+            font-size: 0.9rem;
+            color: #333; /* Đổi màu chữ về tối để tương phản */
+            border-left: 4px solid #1a73e8;
+        }
+
+        .navigation-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+        }
+
+        .button {
+            background-color: #1a73e8;
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: background-color 0.3s ease;
+        }
+
+        .button:hover {
+            background-color: #1557b0;
+        }
+
+        /* Hiển thị number-selector theo chiều ngang, từ trái sang phải, xuống dòng khi vượt width */
+        .number-selector {
+            display: flex;
+            flex-direction: row; /* Hiển thị theo hàng ngang */
+            flex-wrap: wrap; /* Tự động xuống dòng khi vượt chiều rộng */
+            gap: 10px; /* Khoảng cách giữa các số */
+            justify-content: flex-start; /* Căn trái */
+        }
+
+        .number-selector span {
+            background-color: #e0e0e0;
+            padding: 10px;
+            text-align: center;
+            font-size: 0.85rem;
+            border-radius: 50%;
+            cursor: pointer;
+            width: 35px;
+            height: 35px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .number-selector span:hover {
+            background-color: #c0c0c0;
+        }
+
+        .number-selector span.selected {
+            background-color: #1a73e8;
+            color: white;
+        }
+
+        .number-selector span.correct {
+            background-color: #34c759;
+            color: white;
+        }
+
+        .number-selector span.incorrect {
+            background-color: #ff4444;
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+                padding: 20px;
+            }
+
+            .content-left, .content-right {
+                width: 100%;
+                margin: 0;
+            }
+
+            .content-right {
+                margin-top: 20px;
+            }
+
+            /* Giữ hiển thị ngang trên mobile */
+            .number-selector {
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: center; /* Căn giữa trên mobile */
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- <h1>Khái Niệm và Quy Tắc GPLX</h1> -->
+
+        <div class="content-left" id="content-left">
+            <!-- 
+
+            <div class="question-section">
+                <h2>“Làn đường” là gì?</h2>
+            </div>
+
+            <div class="image-section">
+                <img src="https://www.bigfootdigital.co.uk/wp-content/uploads/2020/07/image-optimisation-scaled.jpg" alt="Hình minh họa về làn đường">
+            </div>
+
+            <div class="answer-options">
+                <div class="answer-option" onclick="selectAnswer(this, true)">
+                    <p>1. Là một phần của phần đường xe chạy được chia theo chiều dọc của đường, sử dụng cho xe chạy.</p>
+                </div>
+                <div class="answer-option" onclick="selectAnswer(this, false)">
+                    <p>2. Là một phần của phần đường xe chạy được chia theo chiều dọc của đường, có bề rộng cho xe chạy an toàn.</p>
+                </div>
+                <div class="answer-option" onclick="selectAnswer(this, false)">
+                    <p>3. Là đường cho ô tô chạy, dừng, đỗ an toàn.</p>
+                </div>
+            </div>
+
+            <div class="explanation">
+                <p><strong>Giải thích đáp án:</strong> Làn đường là một phần của phần đường xe chạy được chia theo chiều dọc của đường, có đủ bề rộng cho xe chạy an toàn. Câu 2 đúng. Đáp án 1 sai vì làn đường chỉ sử dụng cho các loại phương tiện khác nhau, không riêng xe ô tô. Đáp án 3 sai vì làn đường không dành riêng cho các phương tiện dừng hoặc đỗ.</p>
+            </div>
+
+            <div class="navigation-buttons">
+                <button class="button">Trở về</button>
+                <button class="button">Tiếp theo</button>
+            </div> -->
+        </div> 
+
+        <div class="content-right">
+            <div class="number-selector" id="questions">
+            </div>
+        </div> 
+    </div>
+
+    <script >
+        const ROOT_API = 'http://localhost:5170'
+        function selectAnswer(element, isCorrect) {
+            const answers = document.querySelectorAll('.answer-option');
+            answers.forEach(answer => {
+                answer.classList.remove('selected', 'correct', 'incorrect');
+            });
+
+            element.classList.add('selected');
+            if (isCorrect) {
+                element.classList.add('correct');
+            } else {
+                element.classList.add('incorrect');
+            }
+        }
+        console.log('dsadsa')
+        let categoryId = 1;
+        axios.get(`${ROOT_API}/api/Questions/getByCategory/${categoryId}`)
+            .then(response => {
+                const data = response.data;
+                console.log(response.data)
+                    // let data = respone.data;
+                    let html = '';
+                    let number = 1;
+                    response.data.forEach(element => {
+                        html += `<span onclick=selectedQuestion(${JSON.stringify(element)})>${number}</span>`
+                        number++;
+                    });
+                    $('#questions').html(html)
+
+                console.log(response.data);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+
+
+        function selectedQuestion(element){
+            console.log(element)
+            let data = `
+                <div class="question-section">
+                    <h2>${element.questionContent}</h2>
+                </div>
+                `
+                if (element.imageUrl != null){
+                    data += `
+                        <div class="image-section">
+                            <img src="${element.imageUrl}" alt="Hình minh họa">
+                        </div>
+                    `
+                }
+                console.log(data)
+
+                    
+            data += `<div class="answer-options">`
+            let number = 1;
+            element.answers.forEach(answer => {
+                data += `
+                    <div class="answer-option" onclick="selectAnswer(this, true)">
+                        <p>${number}. ${answer.answerText}</p>
+                    </div>
+                `
+                number++;
+            })
+            data += `</div>`;
+
+            
+                `
+                <div class="explanation">
+                    <p><strong>Giải thích đáp án:</strong> Làn đường là một phần của phần đường xe chạy được chia theo chiều dọc của đường, có đủ bề rộng cho xe chạy an toàn. Câu 2 đúng. Đáp án 1 sai vì làn đường chỉ sử dụng cho các loại phương tiện khác nhau, không riêng xe ô tô. Đáp án 3 sai vì làn đường không dành riêng cho các phương tiện dừng hoặc đỗ.</p>
+                </div>
+            `;
+
+            $('#content-left').html(data)
+        }
+
+    </script>
+</body>
+</html>
