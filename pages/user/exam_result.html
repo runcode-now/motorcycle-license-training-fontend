@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kết Quả Bài Thi</title>
+    <script src="https://code.jquery.com/jquery-3.7.1.js"
+        integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jwt-decode@3.1.2/build/jwt-decode.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background-color: #f0f2f5;
+            margin: 0;
+            padding: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            background-color: #ffffff;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            border-bottom: 1px solid #e0e0e0;
+            padding-bottom: 15px;
+        }
+
+        .header h2 {
+            font-size: 2rem;
+            color: #1a73e8;
+            margin: 0;
+            font-weight: 600;
+        }
+
+        .header .back-btn {
+            background: none;
+            border: none;
+            font-size: 1.8rem;
+            cursor: pointer;
+            color: #1a73e8;
+            transition: color 0.3s ease;
+        }
+
+        .header .back-btn:hover {
+            color: #1557b0;
+        }
+
+        .exam-summary {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .exam-summary .score {
+            font-size: 2.5rem;
+            font-weight: 600;
+            color: #1a73e8;
+        }
+
+        .exam-summary .status {
+            font-size: 1.5rem;
+            font-weight: 500;
+        }
+
+        .exam-summary .status.passed {
+            color: #34c759;
+        }
+
+        .exam-summary .status.failed {
+            color: #ff4444;
+        }
+
+        .exam-summary .exam-date {
+            font-size: 1rem;
+            color: #666;
+            margin-top: 10px;
+        }
+
+        .question-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .question-item {
+            background-color: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .question-item .question-title {
+            font-size: 1.3rem;
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .question-item .answer {
+            font-size: 1rem;
+            margin: 5px 0;
+        }
+
+        .question-item .answer.correct {
+            color: #34c759;
+        }
+
+        .question-item .answer.incorrect {
+            color: #ff4444;
+        }
+
+        .question-item .correct-answer {
+            font-size: 1rem;
+            color: #34c759;
+            font-weight: 500;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <button class="back-btn" onclick="goBack()">←</button>
+            <h2>Kết Quả Bài Thi</h2>
+            <div></div>
+        </div>
+        <div class="exam-summary" id="exam-summary">
+            <!-- Thông tin bài thi sẽ được thêm động -->
+        </div>
+        <div class="question-list" id="question-list">
+            <!-- Danh sách câu hỏi và câu trả lời sẽ được thêm động -->
+        </div>
+    </div>
+
+    <script>
+        const ROOT_API = 'http://localhost:5170';
+        const token = localStorage.getItem('jwtToken');
+        const urlParams = new URLSearchParams(window.location.search);
+        const examId = urlParams.get('examId');
+        console.log(examId);
+        // Tải thông tin bài thi và câu trả lời khi trang được tải
+        $(document).ready(function () {
+            loadExamResult();
+        });
+
+        // Hàm tải thông tin bài thi và câu trả lời
+        function loadExamResult() {
+            // Lấy thông tin bài thi
+            $.ajax({
+                url: `${ROOT_API}/api/MockExams/${examId}`,
+                method: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + token
+                },
+                contentType: "application/json",
+                success: function (exam) {
+                    console.log("Thông tin bài thi:", exam);
+                    displayExamSummary(exam);
+
+                    // Lấy danh sách câu trả lời của người dùng từ bảng MockExamAnswers
+                    $.ajax({
+                        url: `${ROOT_API}/api/MockExamAnswers/getByExam/${examId}`,
+                        method: 'GET',
+                        headers: {
+                            'Authorization': 'Bearer ' + token
+                        },
+                        contentType: "application/json",
+                        success: function (answers) {
+                            console.log("Danh sách câu trả lời:", answers);
+                            displayQuestionAnswers(answers);
+                        },
+                        error: function (xhr, status, error) {
+                            console.error('Lỗi khi tải câu trả lời:', error);
+                            $('#question-list').html('<p style="color: red;">Có lỗi xảy ra khi tải câu trả lời. Vui lòng thử lại sau.</p>');
+                        }
+                    });
+                },
+                error: function (xhr, status, error) {
+                    console.error('Lỗi khi tải bài thi:', error);
+                    $('#exam-summary').html('<p style="color: red;">Có lỗi xảy ra khi tải bài thi. Vui lòng thử lại sau.</p>');
+                }
+            });
+        }
+
+        // Hàm hiển thị thông tin tổng quan bài thi
+        function displayExamSummary(exam) {
+            const statusClass = exam.isPassed ? 'passed' : 'failed';
+            const examDate = new Date(exam.examDate).toLocaleString('vi-VN');
+            const html = `
+                <div class="score">${exam.totalScore}/25</div>
+                <div class="status ${statusClass}">${exam.isPassed ? 'Đậu' : 'Rớt'}</div>
+                <div class="exam-date">Ngày thi: ${examDate}</div>
+            `;
+            $('#exam-summary').html(html);
+        }
+
+        // Hàm hiển thị danh sách câu hỏi và câu trả lời
+        async function displayQuestionAnswers(userAnswers) {
+            let html = '';
+            for (let i = 0; i < userAnswers.length; i++) {
+                const userAnswer = userAnswers[i];
+                const questionId = userAnswer.questionId;
+
+                // Lấy chi tiết câu hỏi và đáp án
+                try {
+                    const questionDetails = await $.ajax({
+                        url: `${ROOT_API}/api/Questions/getById/${questionId}`,
+                        method: 'GET',
+                        headers: {
+                            'Authorization': 'Bearer ' + token
+                        },
+                        contentType: "application/json"
+                    });
+
+                    // Tìm đáp án của người dùng và đáp án đúng
+                    const userAnswerText = questionDetails.answers.find(a => a.answerId === userAnswer.answerId)?.answerText || 'Không chọn';
+                    const correctAnswer = questionDetails.answers.find(a => a.isCorrect === true);
+                    const correctAnswerText = correctAnswer ? correctAnswer.answerText : 'Không có đáp án đúng';
+
+                    html += `
+                        <div class="question-item">
+                            <div class="question-title">Câu ${i + 1}: ${encodeHTML(questionDetails.questionContent)}</div>
+                            ${questionDetails.imageUrl ? `<img src="${questionDetails.imageUrl}" style="width: 40%; border-radius: 10px; margin: 10px 0;" alt="Hình minh họa">` : ''}
+                            <div class="answer ${userAnswer.isCorrect ? 'correct' : 'incorrect'}">
+                                Câu trả lời của bạn: ${encodeHTML(userAnswerText)}
+                            </div>
+                            ${!userAnswer.isCorrect ? `<div class="correct-answer">Đáp án đúng: ${encodeHTML(correctAnswerText)}</div>` : ''}
+                        </div>
+                    `;
+                } catch (error) {
+                    console.error(`Lỗi khi tải chi tiết câu hỏi ${questionId}:`, error);
+                    html += `
+                        <div class="question-item">
+                            <div class="question-title">Câu ${i + 1}: Lỗi khi tải câu hỏi</div>
+                            <div style="color: red;">Không thể tải chi tiết câu hỏi.</div>
+                        </div>
+                    `;
+                }
+            }
+            $('#question-list').html(html);
+        }
+
+        // Hàm quay lại trang trước
+        function goBack() {
+            window.history.back();
+        }
+
+        // Hàm mã hóa HTML để hiển thị đúng ký tự tiếng Việt
+        function encodeHTML(str) {
+            return str.replace(/&/g, '&amp;')
+                     .replace(/</g, '&lt;')
+                     .replace(/>/g, '&gt;')
+                     .replace(/"/g, '&quot;');
+        }
+    </script>
+</body>
+
+</html>

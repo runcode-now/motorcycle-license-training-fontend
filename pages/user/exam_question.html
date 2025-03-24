@@ -183,7 +183,7 @@
         }
 
         @media (max-width: 768px) {
- .container {
+            .container {
                 flex-direction: column;
                 padding: 20px;
             }
@@ -229,7 +229,7 @@
         const userId = decodedToken['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'];
 
         // Biến toàn cục
-        let questionsData = []; // Danh sách câu hỏi
+        let questionsData = []; // Danh sách câu hỏi (bao gồm answers)
         let userAnswers = []; // Lưu câu trả lời của người dùng
         let currentIndex = 0; // Chỉ số câu hỏi hiện tại
         let timeRemaining = 19 * 60; // 19 phút = 1140 giây
@@ -241,7 +241,7 @@
             startTimer();
         });
 
-        // Hàm tải thông tin bài thi và danh sách QuestionId
+        // Hàm tải thông tin bài thi và danh sách questions
         function loadExam() {
             $.ajax({
                 url: `${ROOT_API}/api/MockExams/${examId}`,
@@ -253,24 +253,31 @@
                 success: function (response) {
                     console.log("Thông tin bài thi:", response);
 
-                    // Lấy danh sách QuestionId
-                    const questionIds = response.questions;
+                    // Lấy danh sách questions (không có answers)
+                    const questions = response.questions;
 
                     // Tạo danh sách số câu hỏi
                     let html = '';
-                    questionIds.forEach((_, index) => {
+                    questions.forEach((_, index) => {
                         html += `<span onclick="selectedQuestionByIndex(${index})">${index + 1}</span>`;
                     });
                     $('#questions').html(html);
 
                     // Khởi tạo userAnswers
-                    userAnswers = questionIds.map(() => ({
+                    userAnswers = questions.map(() => ({
                         questionId: null,
                         answerId: null
                     }));
 
-                    // Tải chi tiết từng câu hỏi
-                    loadQuestions(questionIds);
+                    // Lưu danh sách questions vào questionsData (tạm thời không có answers)
+                    questionsData = questions;
+
+                    // Hiển thị câu hỏi đầu tiên nếu có
+                    if (questionsData.length > 0) {
+                        selectedQuestionByIndex(0);
+                    } else {
+                        $('#content-left').html('<p>Không có câu hỏi nào trong bài thi này.</p>');
+                    }
                 },
                 error: function (xhr, status, error) {
                     console.error('Lỗi khi tải bài thi:', error);
@@ -279,36 +286,21 @@
             });
         }
 
-        // Hàm tải chi tiết từng câu hỏi
-        async function loadQuestions(questionIds) {
+        // Hàm lấy chi tiết câu hỏi (bao gồm answers) khi hiển thị
+        async function fetchQuestionDetails(questionId) {
             try {
-                // Gọi API getById cho từng QuestionId
-                const questionPromises = questionIds.map(id =>
-                    $.ajax({
-                        url: `${ROOT_API}/api/Questions/getById/${id}`,
-                        method: 'GET',
-                        headers: {
-                            'Authorization': 'Bearer ' + token
-                        },
-                        contentType: "application/json"
-                    })
-                );
-
-                // Chờ tất cả các yêu cầu hoàn tất
-                const responses = await Promise.all(questionPromises);
-                questionsData = responses.map(res => res);
-
-                console.log("Danh sách câu hỏi:", questionsData);
-
-                // Hiển thị câu hỏi đầu tiên nếu có
-                if (questionsData.length > 0) {
-                    selectedQuestionByIndex(0);
-                } else {
-                    $('#content-left').html('<p>Không có câu hỏi nào trong bài thi này.</p>');
-                }
+                const response = await $.ajax({
+                    url: `${ROOT_API}/api/Questions/getById/${questionId}`,
+                    method: 'GET',
+                    headers: {
+                        'Authorization': 'Bearer ' + token
+                    },
+                    contentType: "application/json"
+                });
+                return response;
             } catch (error) {
-                console.error('Lỗi khi tải câu hỏi:', error);
-                $('#content-left').html('<p style="color: red;">Có lỗi xảy ra khi tải câu hỏi. Vui lòng thử lại sau.</p>');
+                console.error(`Lỗi khi tải chi tiết câu hỏi ${questionId}:`, error);
+                throw error;
             }
         }
 
@@ -358,53 +350,64 @@
         }
 
         // Hàm hiển thị câu hỏi khi người dùng chọn
-        function selectedQuestionByIndex(index) {
+        async function selectedQuestionByIndex(index) {
             currentIndex = index;
-            const question = questionsData[index];
-            console.log("Câu hỏi được chọn:", question);
+            let question = questionsData[index];
+            console.log("Câu hỏi được chọn (trước khi lấy answers):", question);
 
             // Cập nhật trạng thái giao diện
             updateQuestionStatuses();
 
-            // Tạo HTML cho câu hỏi
-            let data = `
-                <div class="question-section">
-                    <h2>Câu hỏi số ${index + 1}: ${encodeHTML(question.questionContent)}</h2>
-                </div>
-            `;
+            try {
+                // Gọi API để lấy chi tiết câu hỏi, bao gồm answers
+                const questionDetails = await fetchQuestionDetails(question.questionId);
+                console.log("Chi tiết câu hỏi (bao gồm answers):", questionDetails);
 
-            if (question.imageUrl) {
-                data += `
-                    <div class="image-section">
-                        <img src="${question.imageUrl}" style="width: 40%;" alt="Hình minh họa">
-a>
+                // Cập nhật question với dữ liệu mới (bao gồm answers)
+                question = { ...question, answers: questionDetails.answers };
+                questionsData[index] = question;
+
+                // Tạo HTML cho câu hỏi
+                let data = `
+                    <div class="question-section">
+                        <h2>Câu hỏi số ${index + 1}: ${encodeHTML(question.questionContent)}</h2>
                     </div>
                 `;
+
+                if (question.imageUrl) {
+                    data += `
+                        <div class="image-section">
+                            <img src="${question.imageUrl}" style="width: 40%;" alt="Hình minh họa">
+                        </div>
+                    `;
+                }
+
+                data += `<div class="answer-options">`;
+                question.answers.forEach((answer, answerIndex) => {
+                    const isSelected = userAnswers[currentIndex].answerId === answer.answerId;
+                    data += `
+                        <div class="answer-option ${isSelected ? 'selected' : ''}" onclick="handleAnswerSelection(this, ${answer.answerId}, ${question.questionId})">
+                            <p>${answerIndex + 1}. ${encodeHTML(answer.answerText)}</p>
+                        </div>
+                    `;
+                });
+                data += `</div>`;
+
+                // Thêm nút điều hướng và nút nộp bài
+                data += `
+                    <div class="navigation-buttons">
+                        <button class="button" onclick="previousQuestion()">Trở về</button>
+                        <button class="button submit" onclick="submitExam()">Nộp bài</button>
+                        <button class="button" onclick="nextQuestion()">Tiếp theo</button>
+                    </div>
+                `;
+
+                $('#content-left').html(data);
+                $('#content-left').prepend(`<div class="timer" id="timer">Thời gian còn lại: 19:00</div>`);
+                $('#content-left').prepend(`<h1>Đề thi sát hạch</h1>`);
+            } catch (error) {
+                $('#content-left').html('<p style="color: red;">Có lỗi xảy ra khi tải câu hỏi. Vui lòng thử lại sau.</p>');
             }
-
-            data += `<div class="answer-options">`;
-            question.answers.forEach((answer, answerIndex) => {
-                const isSelected = userAnswers[currentIndex].answerId === answer.answerId;
-                data += `
-                    <div class="answer-option ${isSelected ? 'selected' : ''}" onclick="handleAnswerSelection(this, ${answer.answerId}, ${question.questionId})">
-                        <p>${answerIndex + 1}. ${encodeHTML(answer.answerText)}</p>
-                    </div>
-                `;
-            });
-            data += `</div>`;
-
-            // Thêm nút điều hướng và nút nộp bài
-            data += `
-                <div class="navigation-buttons">
-                    <button class="button" onclick="previousQuestion()">Trở về</button>
-                    <button class="button submit" onclick="submitExam()">Nộp bài</button>
-                    <button class="button" onclick="nextQuestion()">Tiếp theo</button>
-                </div>
-            `;
-
-            $('#content-left').html(data);
-            $('#content-left').prepend(`<div class="timer" id="timer">Thời gian còn lại: 19:00</div>`);
-            $('#content-left').prepend(`<h1>Đề thi sát hạch</h1>`);
         }
 
         // Hàm xử lý khi người dùng chọn đáp án
@@ -449,7 +452,7 @@ a>
                 success: function (response) {
                     console.log("Nộp bài thành công:", response);
                     alert(`Nộp bài thành công! Điểm của bạn: ${response.score}/${questionsData.length}. Kết quả: ${response.isPassed ? 'Đậu' : 'Rớt'}`);
-                    window.location.href = 'mock-exams.html'; // Chuyển hướng về trang danh sách bài thi
+                    window.location.href = 'exam_list.html'; // Chuyển hướng về trang danh sách bài thi
                 },
                 error: function (xhr, status, error) {
                     console.error('Lỗi khi nộp bài:', error);

@@ -116,6 +116,19 @@
             color: #1a73e8;
         }
 
+        .exam-info .exam-result {
+            font-size: 1rem;
+            font-weight: 500;
+        }
+
+        .exam-info .exam-result.passed {
+            color: #34c759;
+        }
+
+        .exam-info .exam-result.failed {
+            color: #ff4444;
+        }
+
         .exam-action button {
             padding: 10px 30px;
             border: none;
@@ -133,6 +146,16 @@
 
         .exam-action .start-btn:hover {
             background-color: #1557b0;
+            transform: scale(1.05);
+        }
+
+        .exam-action .view-result-btn {
+            background-color: #34c759;
+            color: white;
+        }
+
+        .exam-action .view-result-btn:hover {
+            background-color: #2ea44f;
             transform: scale(1.05);
         }
     </style>
@@ -160,7 +183,7 @@
         $(document).ready(function () {
             loadExams();
         });
-        console.log(userId)
+
         // Hàm tải danh sách bài thi từ API
         function loadExams() {
             $.ajax({
@@ -187,6 +210,11 @@
             exams.forEach((exam, index) => {
                 const examNumber = index + 1;
                 const timeRemaining = '19 phút'; // Thời gian mặc định
+
+                // Kiểm tra trạng thái bài thi
+                const isCompleted = exam.status === "completed";
+                const resultText = isCompleted ? `Điểm: ${exam.totalScore}/25 - ${exam.isPassed ? 'Đậu' : 'Rớt'}` : '';
+                const resultClass = isCompleted ? (exam.isPassed ? 'passed' : 'failed') : '';
                 console.log(exam)
                 html += `
                     <div class="exam-item">
@@ -194,9 +222,13 @@
                             <span class="question-count">25 câu hỏi</span>
                             <span class="exam-title">Đề số ${examNumber}</span>
                             <span class="exam-time">${timeRemaining}</span>
+                            ${isCompleted ? `<span class="exam-result ${resultClass}">${resultText}</span>` : ''}
                         </div>
                         <div class="exam-action">
-                            <button class="start-btn" onclick="loadExam(${exam.mockExamId})">Bắt đầu</button>
+                            <button class="${isCompleted ? 'view-result-btn' : 'start-btn'}" 
+                                    onclick="${isCompleted ? `viewExamResult(${exam.mockExamId})` : `loadExam(${exam.mockExamId})`}">
+                                ${isCompleted ? 'Xem chi tiết' : 'Bắt đầu'}
+                            </button>
                         </div>
                     </div>
                 `;
@@ -204,9 +236,14 @@
             $('#exam-list').html(html);
         }
 
-        // Hàm tải bài thi và câu hỏi
+        // Hàm tải bài thi và câu hỏi (cho bài thi chưa hoàn thành)
         function loadExam(examId) {
-            window.location.href = `exam_question.html?examId=${examId}`
+            window.location.href = `exam_question.html?examId=${examId}`;
+        }
+
+        // Hàm xem chi tiết kết quả bài thi (cho bài thi đã hoàn thành)
+        function viewExamResult(examId) {
+            window.location.href = `exam_result.html?examId=${examId}`;
         }
 
         // Hàm quay lại trang trước
@@ -221,7 +258,7 @@
                 isPassed: false,
                 userId: userId,
                 status: "not_started"
-            }
+            };
 
             $.ajax({
                 url: `${ROOT_API}/api/MockExams/create`,
