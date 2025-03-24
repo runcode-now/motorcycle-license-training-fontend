@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thi Sát Hạch</title>
+    <script src="https://code.jquery.com/jquery-3.7.1.js"
+        integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jwt-decode@3.1.2/build/jwt-decode.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background-color: #f0f2f5;
+            margin: 0;
+            padding: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            background-color: #ffffff;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            border-bottom: 1px solid #e0e0e0;
+            padding-bottom: 15px;
+        }
+
+        .header h2 {
+            font-size: 2rem;
+            color: #1a73e8;
+            margin: 0;
+            font-weight: 600;
+        }
+
+        .header .back-btn,
+        .header .add-btn {
+            background: none;
+            border: none;
+            font-size: 1.8rem;
+            cursor: pointer;
+            color: #1a73e8;
+            transition: color 0.3s ease;
+        }
+
+        .header .back-btn:hover,
+        .header .add-btn:hover {
+            color: #1557b0;
+        }
+
+        .exam-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .exam-item {
+            background-color: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .exam-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+            background-color: #e8f0fe;
+        }
+
+        .exam-info {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .exam-info .question-count {
+            font-size: 0.9rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .exam-info .exam-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .exam-info .exam-time {
+            font-size: 1rem;
+            color: #666;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .exam-info .exam-time::before {
+            content: '⏳';
+            margin-right: 8px;
+            color: #1a73e8;
+        }
+
+        .exam-action button {
+            padding: 10px 30px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .exam-action .start-btn {
+            background-color: #1a73e8;
+            color: white;
+        }
+
+        .exam-action .start-btn:hover {
+            background-color: #1557b0;
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <button class="back-btn" onclick="goBack()">←</button>
+            <h2>Thi sát hạch</h2>
+            <button class="add-btn" onclick="addNewExam()">+</button>
+        </div>
+        <div class="exam-list" id="exam-list">
+            <!-- Danh sách bài thi sẽ được thêm động -->
+        </div>
+    </div>
+
+    <script>
+        const ROOT_API = 'http://localhost:5170';
+        const token = localStorage.getItem('jwtToken');
+        const decodedToken = jwt_decode(token);
+        const userId = decodedToken['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'];
+
+        // Tải danh sách bài thi khi trang được tải
+        $(document).ready(function () {
+            loadExams();
+        });
+        console.log(userId)
+        // Hàm tải danh sách bài thi từ API
+        function loadExams() {
+            $.ajax({
+                url: `${ROOT_API}/api/MockExams/getByUser/${userId}`,
+                method: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + token
+                },
+                contentType: "application/json",
+                success: function (response) {
+                    console.log("Danh sách bài thi:", response);
+                    displayExams(response);
+                },
+                error: function (xhr, status, error) {
+                    console.error('Lỗi khi tải danh sách bài thi:', error);
+                    $('#exam-list').html('<p style="color: red;">Có lỗi xảy ra khi tải danh sách bài thi. Vui lòng thử lại sau.</p>');
+                }
+            });
+        }
+
+        // Hàm hiển thị danh sách bài thi
+        function displayExams(exams) {
+            let html = '';
+            exams.forEach((exam, index) => {
+                const examNumber = index + 1;
+                const timeRemaining = '19 phút'; // Thời gian mặc định
+                console.log(exam)
+                html += `
+                    <div class="exam-item">
+                        <div class="exam-info">
+                            <span class="question-count">25 câu hỏi</span>
+                            <span class="exam-title">Đề số ${examNumber}</span>
+                            <span class="exam-time">${timeRemaining}</span>
+                        </div>
+                        <div class="exam-action">
+                            <button class="start-btn" onclick="loadExam(${exam.mockExamId})">Bắt đầu</button>
+                        </div>
+                    </div>
+                `;
+            });
+            $('#exam-list').html(html);
+        }
+
+        // Hàm tải bài thi và câu hỏi
+        function loadExam(examId) {
+            window.location.href = `exam_question.html?examId=${examId}`
+        }
+
+        // Hàm quay lại trang trước
+        function goBack() {
+            window.history.back();
+        }
+
+        // Hàm thêm bài thi mới
+        function addNewExam() {
+            const data = {
+                totalScore: -1,
+                isPassed: false,
+                userId: userId,
+                status: "not_started"
+            }
+
+            $.ajax({
+                url: `${ROOT_API}/api/MockExams/create`,
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + token
+                },
+                contentType: "application/json",
+                data: JSON.stringify(data),
+                success: function (response) {
+                    console.log("Tạo bài thi mới thành công:", response);
+                    loadExams(); // Tải lại danh sách
+                },
+                error: function (xhr, status, error) {
+                    console.error('Lỗi khi tạo bài thi mới:', error);
+                    alert('Có lỗi xảy ra khi tạo bài thi mới. Vui lòng thử lại.');
+                }
+            });
+        }
+    </script>
+</body>
+
+</html>

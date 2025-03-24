@@ -1,10 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Khái Niệm và Quy Tắc GPLX</title>
-    <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.js"
+        integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <style>
         body {
@@ -114,12 +116,12 @@
         }
 
         .explanation {
-            background-color: #e8f0fe; /* Đổi màu nền về xanh nhạt để dễ đọc */
+            background-color: #e8f0fe;
             padding: 15px 20px;
             border-radius: 10px;
             margin-top: 25px;
             font-size: 0.9rem;
-            color: #333; /* Đổi màu chữ về tối để tương phản */
+            color: #333;
             border-left: 4px solid #1a73e8;
         }
 
@@ -145,13 +147,12 @@
             background-color: #1557b0;
         }
 
-        /* Hiển thị number-selector theo chiều ngang, từ trái sang phải, xuống dòng khi vượt width */
         .number-selector {
             display: flex;
-            flex-direction: row; /* Hiển thị theo hàng ngang */
-            flex-wrap: wrap; /* Tự động xuống dòng khi vượt chiều rộng */
-            gap: 10px; /* Khoảng cách giữa các số */
-            justify-content: flex-start; /* Căn trái */
+            flex-direction: row;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: flex-start;
         }
 
         .number-selector span {
@@ -194,7 +195,8 @@
                 padding: 20px;
             }
 
-            .content-left, .content-right {
+            .content-left,
+            .content-right {
                 width: 100%;
                 margin: 0;
             }
@@ -203,61 +205,186 @@
                 margin-top: 20px;
             }
 
-            /* Giữ hiển thị ngang trên mobile */
             .number-selector {
                 flex-direction: row;
                 flex-wrap: wrap;
-                justify-content: center; /* Căn giữa trên mobile */
+                justify-content: center;
             }
         }
     </style>
 </head>
+
 <body>
     <div class="container">
-        <!-- <h1>Khái Niệm và Quy Tắc GPLX</h1> -->
-
-        <div class="content-left" id="content-left">
-            <!-- 
-
-            <div class="question-section">
-                <h2>“Làn đường” là gì?</h2>
-            </div>
-
-            <div class="image-section">
-                <img src="https://www.bigfootdigital.co.uk/wp-content/uploads/2020/07/image-optimisation-scaled.jpg" alt="Hình minh họa về làn đường">
-            </div>
-
-            <div class="answer-options">
-                <div class="answer-option" onclick="selectAnswer(this, true)">
-                    <p>1. Là một phần của phần đường xe chạy được chia theo chiều dọc của đường, sử dụng cho xe chạy.</p>
-                </div>
-                <div class="answer-option" onclick="selectAnswer(this, false)">
-                    <p>2. Là một phần của phần đường xe chạy được chia theo chiều dọc của đường, có bề rộng cho xe chạy an toàn.</p>
-                </div>
-                <div class="answer-option" onclick="selectAnswer(this, false)">
-                    <p>3. Là đường cho ô tô chạy, dừng, đỗ an toàn.</p>
-                </div>
-            </div>
-
-            <div class="explanation">
-                <p><strong>Giải thích đáp án:</strong> Làn đường là một phần của phần đường xe chạy được chia theo chiều dọc của đường, có đủ bề rộng cho xe chạy an toàn. Câu 2 đúng. Đáp án 1 sai vì làn đường chỉ sử dụng cho các loại phương tiện khác nhau, không riêng xe ô tô. Đáp án 3 sai vì làn đường không dành riêng cho các phương tiện dừng hoặc đỗ.</p>
-            </div>
-
-            <div class="navigation-buttons">
-                <button class="button">Trở về</button>
-                <button class="button">Tiếp theo</button>
-            </div> -->
-        </div> 
-
+        <div class="content-left" id="content-left"></div>
         <div class="content-right">
-            <div class="number-selector" id="questions">
-            </div>
-        </div> 
+            <div class="number-selector" id="questions"></div>
+        </div>
     </div>
 
-    <script >
-        const ROOT_API = 'http://localhost:5170'
-        function selectAnswer(element, isCorrect) {
+    <script src="https://cdn.jsdelivr.net/npm/jwt-decode@3.1.2/build/jwt-decode.min.js"></script>
+    <script>
+        // Cấu hình cơ bản
+        const ROOT_API = 'http://localhost:5170';
+        const urlParams = new URLSearchParams(window.location.search);
+        const categoryId = urlParams.get('categoryId');
+        const token = localStorage.getItem('jwtToken');
+        const decodedToken = jwt_decode(token);
+        const userId = decodedToken['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'];
+
+        // Biến toàn cục
+        let questionsData = []; // Danh sách câu hỏi
+        let practiceHistories = []; // Lịch sử trả lời của người dùng
+        let currentIndex = 0; // Chỉ số câu hỏi hiện tại
+
+        // Tải dữ liệu khi trang được tải
+        $(document).ready(function () {
+            loadPracticeHistories();
+            loadQuestions();
+        });
+
+        // Hàm tải lịch sử trả lời của người dùng
+        function loadPracticeHistories() {
+            $.ajax({
+                url: `${ROOT_API}/api/PracticeHistory/getByUser/${userId}`,
+                method: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + token
+                },
+                contentType: "application/json",
+                success: function (response) {
+                    practiceHistories = response;
+                    console.log("Lịch sử trả lời:", practiceHistories);
+                    // Sau khi tải lịch sử, cập nhật trạng thái giao diện nếu danh sách câu hỏi đã được tải
+                    if (questionsData.length > 0) {
+                        updateQuestionStatuses();
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error('Lỗi khi tải lịch sử trả lời:', error);
+                    if (xhr.status === 404) {
+                        practiceHistories = []; // Không có lịch sử trả lời
+                    } else {
+                        $('#content-left').prepend('<p style="color: red;">Có lỗi xảy ra khi tải lịch sử trả lời.</p>');
+                    }
+                }
+            });
+        }
+
+        // Hàm tải danh sách câu hỏi từ API
+        function loadQuestions() {
+            $.ajax({
+                url: `${ROOT_API}/api/Questions/getByCategory/${categoryId}`,
+                method: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + token
+                },
+                contentType: "application/json",
+                success: function (response) {
+                    questionsData = response;
+                    console.log("Danh sách câu hỏi:", response);
+
+                    // Tạo danh sách số câu hỏi
+                    let html = '';
+                    response.forEach((_, index) => {
+                        html += `<span onclick="selectedQuestionByIndex(${index})">${index + 1}</span>`;
+                    });
+                    $('#questions').html(html);
+
+                    // Cập nhật trạng thái giao diện dựa trên lịch sử trả lời
+                    if (practiceHistories.length > 0 || practiceHistories.length === 0) {
+                        updateQuestionStatuses();
+                    }
+
+                    // Hiển thị câu hỏi đầu tiên nếu có
+                    if (response.length > 0) {
+                        selectedQuestionByIndex(0);
+                    } else {
+                        $('#content-left').html('<p>Không có câu hỏi nào trong danh mục này.</p>');
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error('Lỗi khi tải câu hỏi:', error);
+                    $('#content-left').html('<p style="color: red;">Có lỗi xảy ra khi tải câu hỏi. Vui lòng thử lại sau.</p>');
+                }
+            });
+        }
+
+        // Hàm cập nhật trạng thái màu sắc của các câu hỏi
+        function updateQuestionStatuses() {
+            const spans = document.querySelectorAll('#questions span');
+            spans.forEach((span, index) => {
+                const questionId = questionsData[index].questionId;
+                const history = practiceHistories.find(ph => ph.questionId === questionId);
+
+                // Xóa các trạng thái cũ
+                span.classList.remove('correct', 'incorrect', 'selected');
+
+                // Áp dụng màu sắc dựa trên lịch sử trả lời
+                if (history) {
+                    if (history.isCorrect) {
+                        span.classList.add('correct'); // Màu xanh nếu trả lời đúng
+                    } else {
+                        span.classList.add('incorrect'); // Màu đỏ nếu trả lời sai
+                    }
+                }
+                // Nếu không có lịch sử, giữ màu mặc định (xám)
+            });
+
+            // Đảm bảo câu hỏi hiện tại được đánh dấu là selected
+            if (spans[currentIndex]) {
+                spans[currentIndex].classList.add('selected');
+            }
+        }
+
+        // Hàm hiển thị câu hỏi khi người dùng chọn
+        function selectedQuestionByIndex(index) {
+            currentIndex = index;
+            const question = questionsData[index];
+            console.log("Câu hỏi được chọn:", question);
+
+            // Cập nhật trạng thái giao diện
+            updateQuestionStatuses();
+
+            // Tạo HTML cho câu hỏi
+            let data = `
+                <div class="question-section">
+                    <h2>Câu hỏi số ${index + 1}: ${encodeHTML(question.questionContent)}</h2>
+                </div>
+            `;
+
+            if (question.imageUrl) {
+                data += `
+                    <div class="image-section">
+                        <img src="${question.imageUrl}" style="width: 40%;" alt="Hình minh họa">
+                    </div>
+                `;
+            }
+
+            data += `<div class="answer-options">`;
+            question.answers.forEach((answer, answerIndex) => {
+                data += `
+                    <div class="answer-option" onclick="handleAnswerSelection(this, ${answer.isCorrect}, '${encodeQuotes(answer.reason || '')}', ${answer.answerId})">
+                        <p>${answerIndex + 1}. ${encodeHTML(answer.answerText)}</p>
+                    </div>
+                `;
+            });
+            data += `</div>`;
+
+            // Thêm nút điều hướng
+            data += `
+                <div class="navigation-buttons">
+                    <button class="button" onclick="previousQuestion()">Trở về</button>
+                    <button class="button" onclick="nextQuestion()">Tiếp theo</button>
+                </div>
+            `;
+
+            $('#content-left').html(data);
+        }
+
+        // Hàm xử lý khi người dùng chọn đáp án
+        function handleAnswerSelection(element, isCorrect, reason, answerId) {
+            // Cập nhật giao diện
             const answers = document.querySelectorAll('.answer-option');
             answers.forEach(answer => {
                 answer.classList.remove('selected', 'correct', 'incorrect');
@@ -269,68 +396,137 @@
             } else {
                 element.classList.add('incorrect');
             }
-        }
-        console.log('dsadsa')
-        let categoryId = 1;
-        axios.get(`${ROOT_API}/api/Questions/getByCategory/${categoryId}`)
-            .then(response => {
-                const data = response.data;
-                console.log(response.data)
-                    // let data = respone.data;
-                    let html = '';
-                    let number = 1;
-                    response.data.forEach(element => {
-                        html += `<span onclick=selectedQuestion(${JSON.stringify(element)})>${number}</span>`
-                        number++;
-                    });
-                    $('#questions').html(html)
 
-                console.log(response.data);
-            })
-            .catch(error => {
-                console.error('Error:', error);
-            });
-
-
-        function selectedQuestion(element){
-            console.log(element)
-            let data = `
-                <div class="question-section">
-                    <h2>${element.questionContent}</h2>
-                </div>
-                `
-                if (element.imageUrl != null){
-                    data += `
-                        <div class="image-section">
-                            <img src="${element.imageUrl}" alt="Hình minh họa">
-                        </div>
-                    `
-                }
-                console.log(data)
-
-                    
-            data += `<div class="answer-options">`
-            let number = 1;
-            element.answers.forEach(answer => {
-                data += `
-                    <div class="answer-option" onclick="selectAnswer(this, true)">
-                        <p>${number}. ${answer.answerText}</p>
-                    </div>
-                `
-                number++;
-            })
-            data += `</div>`;
-
-            
-                `
+            // Hiển thị giải thích
+            $('.explanation').remove();
+            const explanationHtml = `
                 <div class="explanation">
-                    <p><strong>Giải thích đáp án:</strong> Làn đường là một phần của phần đường xe chạy được chia theo chiều dọc của đường, có đủ bề rộng cho xe chạy an toàn. Câu 2 đúng. Đáp án 1 sai vì làn đường chỉ sử dụng cho các loại phương tiện khác nhau, không riêng xe ô tô. Đáp án 3 sai vì làn đường không dành riêng cho các phương tiện dừng hoặc đỗ.</p>
+                    <p><strong>Giải thích đáp án:</strong> ${encodeHTML(reason || 'Không có giải thích')}</p>
                 </div>
             `;
+            $('#content-left').append(explanationHtml);
 
-            $('#content-left').html(data)
+            // Kiểm tra và lưu/cập nhật lịch sử trả lời
+            checkPracticeHistory(userId, questionsData[currentIndex].questionId, answerId, isCorrect);
         }
 
+        // Hàm kiểm tra lịch sử trả lời
+        function checkPracticeHistory(userId, questionId, answerId, isCorrect) {
+            $.ajax({
+                url: `${ROOT_API}/api/PracticeHistory/getPracticeHistory/${userId}/${questionId}`,
+                method: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + token
+                },
+                contentType: "application/json",
+                success: function (response) {
+                    // Người dùng đã trả lời trước đó, cập nhật bản ghi
+                    updatePracticeHistory(response.practiceHistoryId, answerId, isCorrect);
+                },
+                error: function (xhr, status, error) {
+                    if (xhr.status === 404) {
+                        // Người dùng chưa trả lời, tạo bản ghi mới
+                        createPracticeHistory(userId, questionId, answerId, isCorrect);
+                    } else {
+                        console.error('Lỗi khi kiểm tra lịch sử:', error);
+                        $('#content-left').prepend('<p style="color: red;">Có lỗi xảy ra khi lưu câu trả lời. Vui lòng thử lại.</p>');
+                    }
+                }
+            });
+        }
+
+        // Hàm tạo mới bản ghi PracticeHistory
+        function createPracticeHistory(userId, questionId, answerId, isCorrect) {
+            const data = {
+                answerId: answerId,
+                isCorrect: isCorrect,
+                userId: userId,
+                questionId: questionId
+            };
+
+            $.ajax({
+                url: `${ROOT_API}/api/PracticeHistory`,
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + token
+                },
+                contentType: "application/json",
+                data: JSON.stringify(data),
+                success: function (response) {
+                    console.log("Tạo mới lịch sử trả lời thành công:", response);
+                    // Thêm bản ghi mới vào practiceHistories và cập nhật giao diện
+                    practiceHistories.push(response);
+                    updateQuestionStatuses();
+                },
+                error: function (xhr, status, error) {
+                    console.error('Lỗi khi tạo lịch sử trả lời:', error);
+                    $('#content-left').prepend('<p style="color: red;">Có lỗi xảy ra khi lưu câu trả lời. Vui lòng thử lại.</p>');
+                }
+            });
+        }
+
+        // Hàm cập nhật bản ghi PracticeHistory
+        function updatePracticeHistory(practiceHistoryId, answerId, isCorrect) {
+            const data = {
+                practiceHistoryId: practiceHistoryId,
+                answerId: answerId,
+                isCorrect: isCorrect,
+                userId: userId,
+                questionId: questionsData[currentIndex].questionId
+            };
+
+            $.ajax({
+                url: `${ROOT_API}/api/PracticeHistory/${practiceHistoryId}`,
+                method: 'PUT',
+                headers: {
+                    'Authorization': 'Bearer ' + token
+                },
+                contentType: "application/json",
+                data: JSON.stringify(data),
+                success: function (response) {
+                    console.log("Cập nhật lịch sử trả lời thành công:", response);
+                    // Cập nhật practiceHistories và giao diện
+                    const index = practiceHistories.findIndex(ph => ph.practiceHistoryId === practiceHistoryId);
+                    if (index !== -1) {
+                        practiceHistories[index] = { ...practiceHistories[index], answerId, isCorrect };
+                    }
+                    updateQuestionStatuses();
+                },
+                error: function (xhr, status, error) {
+                    console.error('Lỗi khi cập nhật lịch sử trả lời:', error);
+                    $('#content-left').prepend('<p style="color: red;">Có lỗi xảy ra khi cập nhật câu trả lời. Vui lòng thử lại.</p>');
+                }
+            });
+        }
+
+        // Hàm điều hướng câu hỏi trước
+        function previousQuestion() {
+            if (currentIndex > 0) {
+                selectedQuestionByIndex(currentIndex - 1);
+            }
+        }
+
+        // Hàm điều hướng câu hỏi tiếp theo
+        function nextQuestion() {
+            if (currentIndex < questionsData.length - 1) {
+                selectedQuestionByIndex(currentIndex + 1);
+            }
+        }
+
+        // Hàm mã hóa HTML để hiển thị đúng ký tự tiếng Việt
+        function encodeHTML(str) {
+            return str.replace(/&/g, '&amp;')
+                     .replace(/</g, '&lt;')
+                     .replace(/>/g, '&gt;')
+                     .replace(/"/g, '&quot;')
+                     .replace(/'/g, '&#39;');
+        }
+
+        // Hàm thoát ký tự đặc biệt cho thuộc tính onclick
+        function encodeQuotes(str) {
+            return (str || '').replace(/'/g, "\\'").replace(/"/g, '\\"');
+        }
     </script>
 </body>
+
 </html>

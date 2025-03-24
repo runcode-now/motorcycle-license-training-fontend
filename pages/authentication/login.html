@@ -7,60 +7,102 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Sign Up Form by Colorlib</title>
 
-    <!-- Font Icon -->
     <link rel="stylesheet" href="fonts/material-icon/css/material-design-iconic-font.min.css">
 
-    <!-- Main css -->
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="../../css/style.css">
+    <script src="https://code.jquery.com/jquery-3.7.1.js"
+        integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jwt-decode@3.1.2/build/jwt-decode.min.js"></script>
 </head>
 
 <body>
-
     <div class="main">
-        <!-- Sing in  Form -->
         <section class="sign-in">
             <div class="container">
                 <div class="signin-content">
                     <div class="signin-image">
-                        <figure><img src="https://mir-s3-cdn-cf.behance.net/project_modules/disp/ee89b0208079789.66e8edb37316c.jpg" alt="sing up image"></figure>
-                        <a href="#" class="signup-image-link">Create an account</a>
+                        <figure><img
+                                src="https://mir-s3-cdn-cf.behance.net/project_modules/disp/ee89b0208079789.66e8edb37316c.jpg"
+                                alt="sign up image"></figure>
+                        <a href="signu  p.html" class="signup-image-link"
+                            style="font-family: Arial, Helvetica, sans-serif;">Create an account</a>
                     </div>
 
                     <div class="signin-form">
-                        <h2 class="form-title">Login</h2>
-                        <form method="POST" class="register-form" id="login-form">
+                        <h2 class="form-title">Đăng nhập</h2>
+                        <form class="register-form" id="login-form">
                             <div class="form-group">
-                                <label for="your_name"><i class="zmdi zmdi-account material-icons-name"></i></label>
-                                <input type="text" name="your_name" id="your_name" placeholder="Your Name" />
+                                <label for="email"><i class="zmdi zmdi-account material-icons-name"></i></label>
+                                <input type="email" name="your_name" id="email" placeholder="Email" />
                             </div>
                             <div class="form-group">
-                                <label for="your_pass"><i class="zmdi zmdi-lock"></i></label>
-                                <input type="password" name="your_pass" id="your_pass" placeholder="Password" />
-                            </div>
-                            <div class="form-group">
-                                <input type="checkbox" name="remember-me" id="remember-me" class="agree-term" />
-                                <label for="remember-me" class="label-agree-term"><span><span></span></span>Remember
-                                    me</label>
+                                <label for="password"><i class="zmdi zmdi-lock"></i></label>
+                                <input type="password" name="your_pass" id="password" placeholder="Mật khẩu" />
                             </div>
                             <div class="form-group form-button">
-                                <input type="submit" name="signin" id="signin" class="form-submit" value="Log in" />
+                                <input type="submit" name="signin" class="form-submit" value="Log in" />
                             </div>
                         </form>
-                        <div class="social-login">
-                            <span class="social-label">Or login with</span>
-                            <ul class="socials">
-                                <li><a href="#"><i class="display-flex-center zmdi zmdi-facebook"></i></a></li>
-                                <li><a href="#"><i class="display-flex-center zmdi zmdi-twitter"></i></a></li>
-                                <li><a href="#"><i class="display-flex-center zmdi zmdi-google"></i></a></li>
-                            </ul>
-                        </div>
                     </div>
                 </div>
             </div>
         </section>
-
     </div>
 
+    <script>
+        const ROOT_API = 'http://localhost:5170';
+
+        $(document).ready(function () {
+            $('#login-form').submit(function (event) {
+                event.preventDefault();
+                login();
+            });
+        });
+
+        function login() {
+            let email = $('#email').val();
+            let password = $('#password').val();
+
+            if (!email || !password) {
+                alert('Email or password cannot be empty');
+                return;
+            }
+
+            const data = {
+                email: email,
+                password: password,
+            };
+
+            console.log(data)
+
+            $.ajax({
+                url: ROOT_API + '/api/Authentication/login',
+                method: 'POST',
+                contentType: "application/json",
+                data: JSON.stringify(data),
+                success: function (response) {
+                    alert('Login successful');
+                    console.log(response);
+
+                    // Lưu token vào localStorage hoặc biến
+                    const token = response.token;
+                    localStorage.setItem('jwtToken', token);
+
+                    // Giải mã token để lấy user ID
+                    const decodedToken = jwt_decode(token);
+                    const userId = decodedToken['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'];
+                    console.log('User ID:', userId);
+                    
+                    window.location.href = '../../home.html';
+
+                },
+                error: function (xhr, status, error) {
+                    alert('Login failed: ' + xhr.responseText);
+                    console.log(status, error);
+                }
+            });
+        }
+    </script>
 </body>
 
 </html>

@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thi Sát Hạch</title>
+    <script src="https://code.jquery.com/jquery-3.7.1.js"
+        integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background-color: #f0f2f5;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1100px;
+            background-color: #ffffff;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+            display: flex;
+            flex-direction: row;
+            gap: 20px;
+            position: relative;
+        }
+
+        .content-left {
+            width: 70%;
+        }
+
+        .content-right {
+            width: 30%;
+            padding: 15px;
+            border-radius: 12px;
+            position: sticky;
+            top: 20px;
+            height: fit-content;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            text-align: center;
+            margin-bottom: 25px;
+            color: #1a73e8;
+            font-weight: 600;
+        }
+
+        .timer {
+            font-size: 1.2rem;
+            font-weight: 500;
+            color: #1a73e8;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .timer.warning {
+            color: #ff4444;
+        }
+
+        .question-section h2 {
+            font-size: 1.3rem;
+            color: #333;
+            margin-bottom: 15px;
+            font-weight: 500;
+        }
+
+        .question-section p {
+            font-size: 0.95rem;
+            color: #555;
+            line-height: 1.5;
+        }
+
+        .image-section img {
+            width: 100%;
+            border-radius: 10px;
+            margin: 20px 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .answer-options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .answer-option {
+            background-color: #f8f9fa;
+            padding: 15px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            color: #333;
+            border: 1px solid #e0e0e0;
+            transition: all 0.3s ease;
+        }
+
+        .answer-option:hover {
+            background-color: #e8f0fe;
+            border-color: #1a73e8;
+        }
+
+        .answer-option.selected {
+            background-color: #1a73e8;
+            color: white;
+            border-color: #1a73e8;
+        }
+
+        .navigation-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+        }
+
+        .button {
+            background-color: #1a73e8;
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: background-color 0.3s ease;
+        }
+
+        .button:hover {
+            background-color: #1557b0;
+        }
+
+        .button.submit {
+            background-color: #34c759;
+        }
+
+        .button.submit:hover {
+            background-color: #2ea44f;
+        }
+
+        .number-selector {
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: flex-start;
+        }
+
+        .number-selector span {
+            background-color: #e0e0e0;
+            padding: 10px;
+            text-align: center;
+            font-size: 0.85rem;
+            border-radius: 50%;
+            cursor: pointer;
+            width: 35px;
+            height: 35px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .number-selector span:hover {
+            background-color: #c0c0c0;
+        }
+
+        .number-selector span.selected {
+            background-color: #1a73e8;
+            color: white;
+        }
+
+        .number-selector span.answered {
+            background-color: #34c759;
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+ .container {
+                flex-direction: column;
+                padding: 20px;
+            }
+
+            .content-left,
+            .content-right {
+                width: 100%;
+                margin: 0;
+            }
+
+            .content-right {
+                margin-top: 20px;
+            }
+
+            .number-selector {
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="content-left" id="content-left">
+            <h1>Đề thi sát hạch</h1>
+            <div class="timer" id="timer">Thời gian còn lại: 19:00</div>
+        </div>
+        <div class="content-right">
+            <div class="number-selector" id="questions"></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/jwt-decode@3.1.2/build/jwt-decode.min.js"></script>
+    <script>
+        // Cấu hình cơ bản
+        const ROOT_API = 'http://localhost:5170';
+        const urlParams = new URLSearchParams(window.location.search);
+        const examId = urlParams.get('examId');
+        const token = localStorage.getItem('jwtToken');
+        const decodedToken = jwt_decode(token);
+        const userId = decodedToken['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'];
+
+        // Biến toàn cục
+        let questionsData = []; // Danh sách câu hỏi
+        let userAnswers = []; // Lưu câu trả lời của người dùng
+        let currentIndex = 0; // Chỉ số câu hỏi hiện tại
+        let timeRemaining = 19 * 60; // 19 phút = 1140 giây
+        let timerInterval = null;
+
+        // Tải dữ liệu khi trang được tải
+        $(document).ready(function () {
+            loadExam();
+            startTimer();
+        });
+
+        // Hàm tải thông tin bài thi và danh sách QuestionId
+        function loadExam() {
+            $.ajax({
+                url: `${ROOT_API}/api/MockExams/${examId}`,
+                method: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + token
+                },
+                contentType: "application/json",
+                success: function (response) {
+                    console.log("Thông tin bài thi:", response);
+
+                    // Lấy danh sách QuestionId
+                    const questionIds = response.questions;
+
+                    // Tạo danh sách số câu hỏi
+                    let html = '';
+                    questionIds.forEach((_, index) => {
+                        html += `<span onclick="selectedQuestionByIndex(${index})">${index + 1}</span>`;
+                    });
+                    $('#questions').html(html);
+
+                    // Khởi tạo userAnswers
+                    userAnswers = questionIds.map(() => ({
+                        questionId: null,
+                        answerId: null
+                    }));
+
+                    // Tải chi tiết từng câu hỏi
+                    loadQuestions(questionIds);
+                },
+                error: function (xhr, status, error) {
+                    console.error('Lỗi khi tải bài thi:', error);
+                    $('#content-left').html('<p style="color: red;">Có lỗi xảy ra khi tải bài thi. Vui lòng thử lại sau.</p>');
+                }
+            });
+        }
+
+        // Hàm tải chi tiết từng câu hỏi
+        async function loadQuestions(questionIds) {
+            try {
+                // Gọi API getById cho từng QuestionId
+                const questionPromises = questionIds.map(id =>
+                    $.ajax({
+                        url: `${ROOT_API}/api/Questions/getById/${id}`,
+                        method: 'GET',
+                        headers: {
+                            'Authorization': 'Bearer ' + token
+                        },
+                        contentType: "application/json"
+                    })
+                );
+
+                // Chờ tất cả các yêu cầu hoàn tất
+                const responses = await Promise.all(questionPromises);
+                questionsData = responses.map(res => res);
+
+                console.log("Danh sách câu hỏi:", questionsData);
+
+                // Hiển thị câu hỏi đầu tiên nếu có
+                if (questionsData.length > 0) {
+                    selectedQuestionByIndex(0);
+                } else {
+                    $('#content-left').html('<p>Không có câu hỏi nào trong bài thi này.</p>');
+                }
+            } catch (error) {
+                console.error('Lỗi khi tải câu hỏi:', error);
+                $('#content-left').html('<p style="color: red;">Có lỗi xảy ra khi tải câu hỏi. Vui lòng thử lại sau.</p>');
+            }
+        }
+
+        // Hàm bắt đầu đếm ngược thời gian
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                timeRemaining--;
+                updateTimerDisplay();
+
+                if (timeRemaining <= 0) {
+                    clearInterval(timerInterval);
+                    submitExam(); // Tự động nộp bài khi hết thời gian
+                }
+            }, 1000);
+        }
+
+        // Hàm cập nhật hiển thị thời gian
+        function updateTimerDisplay() {
+            const minutes = Math.floor(timeRemaining / 60);
+            const seconds = timeRemaining % 60;
+            const timerElement = document.getElementById('timer');
+            timerElement.textContent = `Thời gian còn lại: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+
+            // Cảnh báo khi còn dưới 1 phút
+            if (timeRemaining <= 60) {
+                timerElement.classList.add('warning');
+            }
+        }
+
+        // Hàm cập nhật trạng thái màu sắc của các câu hỏi
+        function updateQuestionStatuses() {
+            const spans = document.querySelectorAll('#questions span');
+            spans.forEach((span, index) => {
+                // Xóa các trạng thái cũ
+                span.classList.remove('answered', 'selected');
+
+                // Áp dụng màu sắc nếu câu hỏi đã được trả lời
+                if (userAnswers[index].answerId !== null) {
+                    span.classList.add('answered');
+                }
+            });
+
+            // Đánh dấu câu hỏi hiện tại là selected
+            if (spans[currentIndex]) {
+                spans[currentIndex].classList.add('selected');
+            }
+        }
+
+        // Hàm hiển thị câu hỏi khi người dùng chọn
+        function selectedQuestionByIndex(index) {
+            currentIndex = index;
+            const question = questionsData[index];
+            console.log("Câu hỏi được chọn:", question);
+
+            // Cập nhật trạng thái giao diện
+            updateQuestionStatuses();
+
+            // Tạo HTML cho câu hỏi
+            let data = `
+                <div class="question-section">
+                    <h2>Câu hỏi số ${index + 1}: ${encodeHTML(question.questionContent)}</h2>
+                </div>
+            `;
+
+            if (question.imageUrl) {
+                data += `
+                    <div class="image-section">
+                        <img src="${question.imageUrl}" style="width: 40%;" alt="Hình minh họa">
+a>
+                    </div>
+                `;
+            }
+
+            data += `<div class="answer-options">`;
+            question.answers.forEach((answer, answerIndex) => {
+                const isSelected = userAnswers[currentIndex].answerId === answer.answerId;
+                data += `
+                    <div class="answer-option ${isSelected ? 'selected' : ''}" onclick="handleAnswerSelection(this, ${answer.answerId}, ${question.questionId})">
+                        <p>${answerIndex + 1}. ${encodeHTML(answer.answerText)}</p>
+                    </div>
+                `;
+            });
+            data += `</div>`;
+
+            // Thêm nút điều hướng và nút nộp bài
+            data += `
+                <div class="navigation-buttons">
+                    <button class="button" onclick="previousQuestion()">Trở về</button>
+                    <button class="button submit" onclick="submitExam()">Nộp bài</button>
+                    <button class="button" onclick="nextQuestion()">Tiếp theo</button>
+                </div>
+            `;
+
+            $('#content-left').html(data);
+            $('#content-left').prepend(`<div class="timer" id="timer">Thời gian còn lại: 19:00</div>`);
+            $('#content-left').prepend(`<h1>Đề thi sát hạch</h1>`);
+        }
+
+        // Hàm xử lý khi người dùng chọn đáp án
+        function handleAnswerSelection(element, answerId, questionId) {
+            // Cập nhật giao diện
+            const answers = document.querySelectorAll('.answer-option');
+            answers.forEach(answer => {
+                answer.classList.remove('selected');
+            });
+
+            element.classList.add('selected');
+
+            // Lưu câu trả lời của người dùng
+            userAnswers[currentIndex] = {
+                questionId: questionId,
+                answerId: answerId
+            };
+
+            // Cập nhật trạng thái giao diện
+            updateQuestionStatuses();
+        }
+
+        // Hàm nộp bài
+        function submitExam() {
+            clearInterval(timerInterval); // Dừng đồng hồ
+
+            // Chuẩn bị dữ liệu để gửi lên server
+            const submissionData = {
+                examId: parseInt(examId),
+                userId: userId,
+                answers: userAnswers.filter(answer => answer.answerId !== null) // Chỉ gửi các câu đã trả lời
+            };
+
+            $.ajax({
+                url: `${ROOT_API}/api/MockExams/submit`,
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + token
+                },
+                contentType: "application/json",
+                data: JSON.stringify(submissionData),
+                success: function (response) {
+                    console.log("Nộp bài thành công:", response);
+                    alert(`Nộp bài thành công! Điểm của bạn: ${response.score}/${questionsData.length}. Kết quả: ${response.isPassed ? 'Đậu' : 'Rớt'}`);
+                    window.location.href = 'mock-exams.html'; // Chuyển hướng về trang danh sách bài thi
+                },
+                error: function (xhr, status, error) {
+                    console.error('Lỗi khi nộp bài:', error);
+                    alert('Có lỗi xảy ra khi nộp bài. Vui lòng thử lại.');
+                }
+            });
+        }
+
+        // Hàm điều hướng câu hỏi trước
+        function previousQuestion() {
+            if (currentIndex > 0) {
+                selectedQuestionByIndex(currentIndex - 1);
+            }
+        }
+
+        // Hàm điều hướng câu hỏi tiếp theo
+        function nextQuestion() {
+            if (currentIndex < questionsData.length - 1) {
+                selectedQuestionByIndex(currentIndex + 1);
+            }
+        }
+
+        // Hàm mã hóa HTML để hiển thị đúng ký tự tiếng Việt
+        function encodeHTML(str) {
+            return str.replace(/&/g, '&')
+                     .replace(/</g, '<')
+                     .replace(/>/g, '>')
+                     .replace(/"/g, '"');
+        }
+    </script>
+</body>
+
+</html>

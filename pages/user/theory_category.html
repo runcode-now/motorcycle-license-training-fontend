@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Interface Design</title>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -74,7 +75,48 @@
         </a> -->
     </div>
 
-    <script src="../../js/user/theory_category.js" type="module"></script>
+    <script>
+        const ROOT_API = 'http://localhost:5170'
+        var token = localStorage.getItem('jwtToken');
+
+        $.ajax({
+            url: `${ROOT_API}/api/Categories/getCategoryByType/theory`,
+            method: 'GET',
+            headers: {
+                'Authorization': 'Bearer ' + token
+            },
+            contentType: "application/json",
+            success: function (response) {
+                console.log(response)
+
+                response.forEach(category => {
+                    const link = document.createElement('a');
+                    link.href = `theory_question.html?categoryId=${category.categoryId}`;
+                    link.target = "_blank";
+                    link.classList.add('card');
+
+                    const img = document.createElement('img');
+                    img.src = category.imageUrl || "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT16grhJ4JRdTUCGIKKzekwFvIXvPJ-cxyP6g&s";
+                    img.alt = category.categoryName;
+
+                    const text = document.createElement('p');
+                    text.innerText = category.categoryName;
+
+                    link.appendChild(img);
+                    link.appendChild(text);
+
+                    tabs.appendChild(link);
+                });
+            },
+            error: function (xhr, status, error) {
+                console.log(xhr.responseText);
+                console.log(status);
+                console.log(error)
+            }
+        })
+
+
+    </script>
 </body>
 
 </html>
