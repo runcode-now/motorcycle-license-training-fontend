@@ -179,13 +179,12 @@
         const decodedToken = jwt_decode(token);
         const userId = decodedToken['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'];
 
-        // Tải danh sách bài thi khi trang được tải
         $(document).ready(function () {
             loadExams();
         });
 
-        // Hàm tải danh sách bài thi từ API
         function loadExams() {
+            console.log('dsadsa')
             $.ajax({
                 url: `${ROOT_API}/api/MockExams/getByUser/${userId}`,
                 method: 'GET',
@@ -204,7 +203,6 @@
             });
         }
 
-        // Hàm hiển thị danh sách bài thi
         function displayExams(exams) {
             let html = '';
             exams.forEach((exam, index) => {
@@ -213,7 +211,7 @@
 
                 // Kiểm tra trạng thái bài thi
                 const isCompleted = exam.status === "completed";
-                const resultText = isCompleted ? `Điểm: ${exam.totalScore}/25 - ${exam.isPassed ? 'Đậu' : 'Rớt'}` : '';
+                const resultText = isCompleted ? `Điểm: ${exam.totalScore}/25 - ${exam.isPassed ? 'Đạt' : 'Không đạt'}` : '';
                 const resultClass = isCompleted ? (exam.isPassed ? 'passed' : 'failed') : '';
                 console.log(exam)
                 html += `
@@ -236,22 +234,18 @@
             $('#exam-list').html(html);
         }
 
-        // Hàm tải bài thi và câu hỏi (cho bài thi chưa hoàn thành)
         function loadExam(examId) {
             window.location.href = `exam_question.html?examId=${examId}`;
         }
 
-        // Hàm xem chi tiết kết quả bài thi (cho bài thi đã hoàn thành)
         function viewExamResult(examId) {
             window.location.href = `exam_result.html?examId=${examId}`;
         }
 
-        // Hàm quay lại trang trước
         function goBack() {
             window.history.back();
         }
 
-        // Hàm thêm bài thi mới
         function addNewExam() {
             const data = {
                 totalScore: -1,

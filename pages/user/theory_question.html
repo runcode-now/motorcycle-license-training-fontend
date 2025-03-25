@@ -224,7 +224,6 @@
 
     <script src="https://cdn.jsdelivr.net/npm/jwt-decode@3.1.2/build/jwt-decode.min.js"></script>
     <script>
-        // Cấu hình cơ bản
         const ROOT_API = 'http://localhost:5170';
         const urlParams = new URLSearchParams(window.location.search);
         const categoryId = urlParams.get('categoryId');
@@ -232,18 +231,15 @@
         const decodedToken = jwt_decode(token);
         const userId = decodedToken['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'];
 
-        // Biến toàn cục
         let questionsData = []; // Danh sách câu hỏi
         let practiceHistories = []; // Lịch sử trả lời của người dùng
         let currentIndex = 0; // Chỉ số câu hỏi hiện tại
 
-        // Tải dữ liệu khi trang được tải
         $(document).ready(function () {
-            loadPracticeHistories();
+            // loadPracticeHistories();
             loadQuestions();
         });
 
-        // Hàm tải lịch sử trả lời của người dùng
         function loadPracticeHistories() {
             $.ajax({
                 url: `${ROOT_API}/api/PracticeHistory/getByUser/${userId}`,
@@ -271,7 +267,6 @@
             });
         }
 
-        // Hàm tải danh sách câu hỏi từ API
         function loadQuestions() {
             $.ajax({
                 url: `${ROOT_API}/api/Questions/getByCategory/${categoryId}`,
@@ -284,7 +279,6 @@
                     questionsData = response;
                     console.log("Danh sách câu hỏi:", response);
 
-                    // Tạo danh sách số câu hỏi
                     let html = '';
                     response.forEach((_, index) => {
                         html += `<span onclick="selectedQuestionByIndex(${index})">${index + 1}</span>`;
@@ -296,7 +290,6 @@
                         updateQuestionStatuses();
                     }
 
-                    // Hiển thị câu hỏi đầu tiên nếu có
                     if (response.length > 0) {
                         selectedQuestionByIndex(0);
                     } else {
@@ -310,7 +303,6 @@
             });
         }
 
-        // Hàm cập nhật trạng thái màu sắc của các câu hỏi
         function updateQuestionStatuses() {
             const spans = document.querySelectorAll('#questions span');
             spans.forEach((span, index) => {
@@ -346,6 +338,13 @@
             // Cập nhật trạng thái giao diện
             updateQuestionStatuses();
 
+            // =========== Tìm lịch sử trả lời của câu hỏi này =======================
+            // const questionId = question.questionId;
+            // const history = practiceHistories.find(ph => ph.questionId === questionId);
+            // const selectedAnswerId = history ? history.answerId : null;
+            // const isCorrect = history ? history.isCorrect : null;
+            // const reason = history ? (question.answers.find(a => a.answerId === selectedAnswerId)?.reason || '') : '';
+
             // Tạo HTML cho câu hỏi
             let data = `
                 <div class="question-section">
@@ -363,6 +362,18 @@
 
             data += `<div class="answer-options">`;
             question.answers.forEach((answer, answerIndex) => {
+                // ============= Kiểm tra xem đáp án này có phải là đáp án đã chọn trước đó không =============
+                // let answerClass = '';
+                // if (selectedAnswerId && answer.answerId === selectedAnswerId) {
+                //     answerClass = 'selected';
+                //     if (isCorrect) {
+                //         answerClass += ' correct';
+                //     } else {
+                //         answerClass += ' incorrect';
+                //     }
+                // }
+
+                // <div class="answer-option ${answerClass}" onclick="handleAnswerSelection(this, ${answer.isCorrect}, '${encodeQuotes(answer.reason || '')}', ${answer.answerId})">
                 data += `
                     <div class="answer-option" onclick="handleAnswerSelection(this, ${answer.isCorrect}, '${encodeQuotes(answer.reason || '')}', ${answer.answerId})">
                         <p>${answerIndex + 1}. ${encodeHTML(answer.answerText)}</p>
@@ -371,13 +382,21 @@
             });
             data += `</div>`;
 
-            // Thêm nút điều hướng
-            data += `
-                <div class="navigation-buttons">
-                    <button class="button" onclick="previousQuestion()">Trở về</button>
-                    <button class="button" onclick="nextQuestion()">Tiếp theo</button>
-                </div>
-            `;
+            // ============= Hiển thị giải thích nếu đã có lịch sử trả lời =============
+            // if (history) {
+            //     data += `
+            //         <div class="explanation">
+            //             <p><strong>Giải thích đáp án:</strong> ${encodeHTML(reason || 'Không có giải thích')}</p>
+            //         </div>
+            //     `;
+            // }
+
+            // data += `
+            //     <div class="navigation-buttons">
+            //         <button class="button" onclick="previousQuestion()">Trở về</button>
+            //         <button class="button" onclick="nextQuestion()">Tiếp theo</button>
+            //     </div>
+            // `;
 
             $('#content-left').html(data);
         }
@@ -499,14 +518,12 @@
             });
         }
 
-        // Hàm điều hướng câu hỏi trước
         function previousQuestion() {
             if (currentIndex > 0) {
                 selectedQuestionByIndex(currentIndex - 1);
             }
         }
 
-        // Hàm điều hướng câu hỏi tiếp theo
         function nextQuestion() {
             if (currentIndex < questionsData.length - 1) {
                 selectedQuestionByIndex(currentIndex + 1);

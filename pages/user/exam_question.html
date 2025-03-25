@@ -220,7 +220,6 @@
 
     <script src="https://cdn.jsdelivr.net/npm/jwt-decode@3.1.2/build/jwt-decode.min.js"></script>
     <script>
-        // Cấu hình cơ bản
         const ROOT_API = 'http://localhost:5170';
         const urlParams = new URLSearchParams(window.location.search);
         const examId = urlParams.get('examId');
@@ -228,20 +227,17 @@
         const decodedToken = jwt_decode(token);
         const userId = decodedToken['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'];
 
-        // Biến toàn cục
         let questionsData = []; // Danh sách câu hỏi (bao gồm answers)
         let userAnswers = []; // Lưu câu trả lời của người dùng
         let currentIndex = 0; // Chỉ số câu hỏi hiện tại
         let timeRemaining = 19 * 60; // 19 phút = 1140 giây
         let timerInterval = null;
 
-        // Tải dữ liệu khi trang được tải
         $(document).ready(function () {
             loadExam();
             startTimer();
         });
 
-        // Hàm tải thông tin bài thi và danh sách questions
         function loadExam() {
             $.ajax({
                 url: `${ROOT_API}/api/MockExams/${examId}`,
@@ -256,7 +252,6 @@
                     // Lấy danh sách questions (không có answers)
                     const questions = response.questions;
 
-                    // Tạo danh sách số câu hỏi
                     let html = '';
                     questions.forEach((_, index) => {
                         html += `<span onclick="selectedQuestionByIndex(${index})">${index + 1}</span>`;
@@ -394,13 +389,13 @@
                 data += `</div>`;
 
                 // Thêm nút điều hướng và nút nộp bài
+                // <button class="button" onclick="previousQuestion()">Trở về</button>
                 data += `
                     <div class="navigation-buttons">
-                        <button class="button" onclick="previousQuestion()">Trở về</button>
                         <button class="button submit" onclick="submitExam()">Nộp bài</button>
-                        <button class="button" onclick="nextQuestion()">Tiếp theo</button>
-                    </div>
-                `;
+                        </div>
+                        `;
+                        // <button class="button" onclick="nextQuestion()">Tiếp theo</button>
 
                 $('#content-left').html(data);
                 $('#content-left').prepend(`<div class="timer" id="timer">Thời gian còn lại: 19:00</div>`);
@@ -461,21 +456,18 @@
             });
         }
 
-        // Hàm điều hướng câu hỏi trước
         function previousQuestion() {
             if (currentIndex > 0) {
                 selectedQuestionByIndex(currentIndex - 1);
             }
         }
 
-        // Hàm điều hướng câu hỏi tiếp theo
         function nextQuestion() {
             if (currentIndex < questionsData.length - 1) {
                 selectedQuestionByIndex(currentIndex + 1);
             }
         }
 
-        // Hàm mã hóa HTML để hiển thị đúng ký tự tiếng Việt
         function encodeHTML(str) {
             return str.replace(/&/g, '&')
                      .replace(/</g, '<')
