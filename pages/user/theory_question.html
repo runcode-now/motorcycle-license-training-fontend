@@ -241,6 +241,7 @@
         });
 
         function loadPracticeHistories() {
+            console.log(userId);
             $.ajax({
                 url: `${ROOT_API}/api/PracticeHistory/getByUser/${userId}`,
                 method: 'GET',

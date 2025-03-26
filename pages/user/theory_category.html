@@ -78,7 +78,6 @@
     <script>
         const ROOT_API = 'http://localhost:5170'
         var token = localStorage.getItem('jwtToken');
-
         $.ajax({
             url: `${ROOT_API}/api/Categories/getCategoryByType/theory`,
             method: 'GET',
