@@ -225,21 +225,21 @@
                         contentType: "application/json"
                     });
 
-                    // Tìm đáp án của người dùng và đáp án đúng
-                    const userAnswerText = questionDetails.answers.find(a => a.answerId === userAnswer.answerId)?.answerText || 'Không chọn';
-                    const correctAnswer = questionDetails.answers.find(a => a.isCorrect === true);
-                    const correctAnswerText = correctAnswer ? correctAnswer.answerText : 'Không có đáp án đúng';
+                            // Tìm đáp án của người dùng và đáp án đúng
+                    const userAnswerText = questionDetails.answer.find(a => a.answerId === userAnswer.answerId)?.answerText || 'Không chọn';
+                    const correctAnswer = questionDetails.answer.find(a => a.isCorrect === true);
+                            const correctAnswerText = correctAnswer ? correctAnswer.answerText : 'Không có đáp án đúng';
 
-                    html += `
-                        <div class="question-item">
-                            <div class="question-title">Câu ${i + 1}: ${encodeHTML(questionDetails.questionContent)}</div>
-                            ${questionDetails.imageUrl ? `<img src="${questionDetails.imageUrl}" style="width: 40%; border-radius: 10px; margin: 10px 0;" alt="Hình minh họa">` : ''}
-                            <div class="answer ${userAnswer.isCorrect ? 'correct' : 'incorrect'}">
-                                Câu trả lời của bạn: ${encodeHTML(userAnswerText)}
-                            </div>
-                            ${!userAnswer.isCorrect ? `<div class="correct-answer">Đáp án đúng: ${encodeHTML(correctAnswerText)}</div>` : ''}
-                        </div>
-                    `;
+                            html += `
+                                <div class="question-item">
+                                    <div class="question-title">Câu ${i + 1}: ${encodeHTML(questionDetails.questionContent)}</div>
+                                    ${questionDetails.imageUrl ? `<img src="${questionDetails.imageUrl}" style="width: 40%; border-radius: 10px; margin: 10px 0;" alt="Hình minh họa">` : ''}
+                                    <div class="answer ${userAnswer.isCorrect ? 'correct' : 'incorrect'}">
+                                        Câu trả lời của bạn: ${encodeHTML(userAnswerText)}
+                                    </div>
+                                    ${!userAnswer.isCorrect ? `<div class="correct-answer">Đáp án đúng: ${encodeHTML(correctAnswerText)}</div>` : ''}
+                                </div>
+                            `;
                 } catch (error) {
                     console.error(`Lỗi khi tải chi tiết câu hỏi ${questionId}:`, error);
                     html += `

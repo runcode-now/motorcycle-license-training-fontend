@@ -240,7 +240,7 @@
 
         function loadExam() {
             $.ajax({
-                url: `${ROOT_API}/api/MockExams/${examId}`,
+                url: `${ROOT_API}/api/MockExam/${examId}`,
                 method: 'GET',
                 headers: {
                     'Authorization': 'Bearer ' + token
@@ -285,7 +285,7 @@
         async function fetchQuestionDetails(questionId) {
             try {
                 const response = await $.ajax({
-                    url: `${ROOT_API}/api/Questions/getById/${questionId}`,
+                    url: `${ROOT_API}/api/Question/getById/${questionId}`,
                     method: 'GET',
                     headers: {
                         'Authorization': 'Bearer ' + token
@@ -348,27 +348,24 @@
         async function selectedQuestionByIndex(index) {
             currentIndex = index;
             let question = questionsData[index];
-            console.log("Câu hỏi được chọn (trước khi lấy answers):", question);
+            // console.log("Câu hỏi được chọn (trước khi lấy answers):", question);
 
             // Cập nhật trạng thái giao diện
             updateQuestionStatuses();
 
             try {
                 // Gọi API để lấy chi tiết câu hỏi, bao gồm answers
-                const questionDetails = await fetchQuestionDetails(question.questionId);
-                console.log("Chi tiết câu hỏi (bao gồm answers):", questionDetails);
+                question = await fetchQuestionDetails(question.questionId);
+                console.log("Chi tiết câu hỏi (bao gồm answers):", question);
 
-                // Cập nhật question với dữ liệu mới (bao gồm answers)
-                question = { ...question, answers: questionDetails.answers };
                 questionsData[index] = question;
-
                 // Tạo HTML cho câu hỏi
                 let data = `
                     <div class="question-section">
                         <h2>Câu hỏi số ${index + 1}: ${encodeHTML(question.questionContent)}</h2>
                     </div>
                 `;
-
+                
                 if (question.imageUrl) {
                     data += `
                         <div class="image-section">
@@ -376,9 +373,10 @@
                         </div>
                     `;
                 }
-
+                
                 data += `<div class="answer-options">`;
-                question.answers.forEach((answer, answerIndex) => {
+                console.log('================')
+                question.answer.forEach((answer, answerIndex) => {
                     const isSelected = userAnswers[currentIndex].answerId === answer.answerId;
                     data += `
                         <div class="answer-option ${isSelected ? 'selected' : ''}" onclick="handleAnswerSelection(this, ${answer.answerId}, ${question.questionId})">
@@ -387,7 +385,7 @@
                     `;
                 });
                 data += `</div>`;
-
+                
                 // Thêm nút điều hướng và nút nộp bài
                 data += `
                     <div class="navigation-buttons">
@@ -433,11 +431,11 @@
             const submissionData = {
                 examId: parseInt(examId),
                 userId: userId,
-                answers: userAnswers.filter(answer => answer.answerId !== null) // Chỉ gửi các câu đã trả lời
+                answer: userAnswers.filter(answer => answer.answerId !== null) // Chỉ gửi các câu đã trả lời
             };
-
+            console.log(submissionData)
             $.ajax({
-                url: `${ROOT_API}/api/MockExams/submit`,
+                url: `${ROOT_API}/api/MockExam/submit`,
                 method: 'POST',
                 headers: {
                     'Authorization': 'Bearer ' + token
