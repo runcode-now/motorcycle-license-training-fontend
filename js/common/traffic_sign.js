@@ -1,7 +1,7 @@
-import { ROOT_API } from './constants.js';
-
-axios.get(`${ROOT_API}/api/Categories/getCategoryByType/traffic_sign`)
+const ROOT_API = 'http://localhost:5170'
+axios.get(`${ROOT_API}/api/Category/getCategoryByType/traffic_sign`)
     .then(response => {
+
         const data = response.data;
         const tabs = document.getElementById('tabs');
         tabs.innerHTML = '';
@@ -22,7 +22,8 @@ axios.get(`${ROOT_API}/api/Categories/getCategoryByType/traffic_sign`)
     });
 
 function showTab(categoryId) {
-    axios.get(`${ROOT_API}/api/TrafficSigns/getByCategory/${categoryId}`)
+    console.log(categoryId);
+    axios.get(`${ROOT_API}/api/TrafficSign/getByCategory/${categoryId}`)
         .then(response => {
             const data = response.data;
             const content = document.getElementById('content');

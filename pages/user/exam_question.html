@@ -389,13 +389,13 @@
                 data += `</div>`;
 
                 // Thêm nút điều hướng và nút nộp bài
-                // <button class="button" onclick="previousQuestion()">Trở về</button>
                 data += `
                     <div class="navigation-buttons">
+                        <button class="button" onclick="previousQuestion()">Trở về</button>
                         <button class="button submit" onclick="submitExam()">Nộp bài</button>
-                        </div>
-                        `;
-                        // <button class="button" onclick="nextQuestion()">Tiếp theo</button>
+                        <button class="button" onclick="nextQuestion()">Tiếp theo</button>
+                    </div>
+                `;
 
                 $('#content-left').html(data);
                 $('#content-left').prepend(`<div class="timer" id="timer">Thời gian còn lại: 19:00</div>`);

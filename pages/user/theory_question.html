@@ -236,12 +236,11 @@
         let currentIndex = 0; // Chỉ số câu hỏi hiện tại
 
         $(document).ready(function () {
-            // loadPracticeHistories();
+            loadPracticeHistories();
             loadQuestions();
         });
 
         function loadPracticeHistories() {
-            console.log(userId);
             $.ajax({
                 url: `${ROOT_API}/api/PracticeHistory/getByUser/${userId}`,
                 method: 'GET',
@@ -270,7 +269,7 @@
 
         function loadQuestions() {
             $.ajax({
-                url: `${ROOT_API}/api/Questions/getByCategory/${categoryId}`,
+                url: `${ROOT_API}/api/Question/getByCategory/${categoryId}`,
                 method: 'GET',
                 headers: {
                     'Authorization': 'Bearer ' + token
@@ -339,12 +338,12 @@
             // Cập nhật trạng thái giao diện
             updateQuestionStatuses();
 
-            // =========== Tìm lịch sử trả lời của câu hỏi này =======================
-            // const questionId = question.questionId;
-            // const history = practiceHistories.find(ph => ph.questionId === questionId);
-            // const selectedAnswerId = history ? history.answerId : null;
-            // const isCorrect = history ? history.isCorrect : null;
-            // const reason = history ? (question.answers.find(a => a.answerId === selectedAnswerId)?.reason || '') : '';
+            // Tìm lịch sử trả lời của câu hỏi này
+            const questionId = question.questionId;
+            const history = practiceHistories.find(ph => ph.questionId === questionId);
+            const selectedAnswerId = history ? history.answerId : null;
+            const isCorrect = history ? history.isCorrect : null;
+            const reason = history ? (question.answers.find(a => a.answerId === selectedAnswerId)?.reason || '') : '';
 
             // Tạo HTML cho câu hỏi
             let data = `
@@ -363,34 +362,33 @@
 
             data += `<div class="answer-options">`;
             question.answers.forEach((answer, answerIndex) => {
-                // ============= Kiểm tra xem đáp án này có phải là đáp án đã chọn trước đó không =============
-                // let answerClass = '';
-                // if (selectedAnswerId && answer.answerId === selectedAnswerId) {
-                //     answerClass = 'selected';
-                //     if (isCorrect) {
-                //         answerClass += ' correct';
-                //     } else {
-                //         answerClass += ' incorrect';
-                //     }
-                // }
+                // Kiểm tra xem đáp án này có phải là đáp án đã chọn trước đó không
+                let answerClass = '';
+                if (selectedAnswerId && answer.answerId === selectedAnswerId) {
+                    answerClass = 'selected';
+                    if (isCorrect) {
+                        answerClass += ' correct';
+                    } else {
+                        answerClass += ' incorrect';
+                    }
+                }
 
-                // <div class="answer-option ${answerClass}" onclick="handleAnswerSelection(this, ${answer.isCorrect}, '${encodeQuotes(answer.reason || '')}', ${answer.answerId})">
                 data += `
-                    <div class="answer-option" onclick="handleAnswerSelection(this, ${answer.isCorrect}, '${encodeQuotes(answer.reason || '')}', ${answer.answerId})">
+                    <div class="answer-option ${answerClass}" onclick="handleAnswerSelection(this, ${answer.isCorrect}, '${encodeQuotes(answer.reason || '')}', ${answer.answerId})">
                         <p>${answerIndex + 1}. ${encodeHTML(answer.answerText)}</p>
                     </div>
                 `;
             });
             data += `</div>`;
 
-            // ============= Hiển thị giải thích nếu đã có lịch sử trả lời =============
-            // if (history) {
-            //     data += `
-            //         <div class="explanation">
-            //             <p><strong>Giải thích đáp án:</strong> ${encodeHTML(reason || 'Không có giải thích')}</p>
-            //         </div>
-            //     `;
-            // }
+            // Hiển thị giải thích nếu đã có lịch sử trả lời
+            if (history) {
+                data += `
+                    <div class="explanation">
+                        <p><strong>Giải thích đáp án:</strong> ${encodeHTML(reason || 'Không có giải thích')}</p>
+                    </div>
+                `;
+            }
 
             // data += `
             //     <div class="navigation-buttons">
