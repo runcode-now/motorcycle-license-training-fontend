@@ -408,10 +408,7 @@
                                     onclick="${isCompleted ? `viewExamResult(${exam.mockExamId})` : `loadExam(${exam.mockExamId})`}">
                                 ${isCompleted ? 'Xem chi tiết' : 'Bắt đầu'}
                             </button>
-                            ${isCompleted ? `
-                                <button class="retake-btn" onclick="retakeExam(${exam.mockExamId})">
-                                    Làm lại
-                                </button>` : ''}
+                            
                         </div>
                     </div>
                 `;
@@ -419,6 +416,11 @@
             $('#exam-list').html(html);
         }
 
+
+        // ${isCompleted ? `
+        //                         <button class="retake-btn" onclick="retakeExam(${exam.mockExamId})">
+        //                             Làm lại
+        //                         </button>` : ''}
         function loadExam(examId) {
             window.location.href = `exam_question.html?examId=${examId}`;
         }

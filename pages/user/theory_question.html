@@ -364,14 +364,14 @@
             question.answers.forEach((answer, answerIndex) => {
                 // Kiểm tra xem đáp án này có phải là đáp án đã chọn trước đó không
                 let answerClass = '';
-                if (selectedAnswerId && answer.answerId === selectedAnswerId) {
-                    answerClass = 'selected';
-                    if (isCorrect) {
-                        answerClass += ' correct';
-                    } else {
-                        answerClass += ' incorrect';
-                    }
-                }
+                // if (selectedAnswerId && answer.answerId === selectedAnswerId) {
+                //     answerClass = 'selected';
+                //     if (isCorrect) {
+                //         answerClass += ' correct';
+                //     } else {
+                //         answerClass += ' incorrect';
+                //     }
+                // }
 
                 data += `
                     <div class="answer-option ${answerClass}" onclick="handleAnswerSelection(this, ${answer.isCorrect}, '${encodeQuotes(answer.reason || '')}', ${answer.answerId})">
@@ -390,12 +390,12 @@
                 `;
             }
 
-            // data += `
-            //     <div class="navigation-buttons">
-            //         <button class="button" onclick="previousQuestion()">Trở về</button>
-            //         <button class="button" onclick="nextQuestion()">Tiếp theo</button>
-            //     </div>
-            // `;
+            data += `
+                <div class="navigation-buttons">
+                    <button class="button" onclick="previousQuestion()">Trở về</button>
+                    <button class="button" onclick="nextQuestion()">Tiếp theo</button>
+                </div>
+            `;
 
             $('#content-left').html(data);
         }
