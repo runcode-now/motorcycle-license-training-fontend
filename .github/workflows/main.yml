@@ -3,7 +3,7 @@ name: Deploy production vfe exe
 on:
   push:
     branches: 
-      - main
+      - develop_new
       
 jobs:
   docker-compose:
