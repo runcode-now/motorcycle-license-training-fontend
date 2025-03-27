@@ -1,32 +1,105 @@
 <!DOCTYPE html>
 <html lang="vi">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thi Sát Hạch</title>
-    <script src="https://code.jquery.com/jquery-3.7.1.js"
-        integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
+    <title>Danh Sách Bài Thi Sát Hạch</title>
+    <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/jwt-decode@3.1.2/build/jwt-decode.min.js"></script>
     <style>
-        body {
-            font-family: 'Segoe UI', Arial, sans-serif;
-            background-color: #f0f2f5;
+        * {
             margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%);
+            min-height: 100vh;
             padding: 40px;
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
+            padding-top: 100px; /* Khoảng cách cho navbar */
         }
 
+        /* Navbar Styles */
+        .navbar {
+            width: 100%;
+            background: #0288d1;
+            padding: 15px 0;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .navbar-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+        }
+
+        .navbar-brand {
+            color: #fff;
+            font-size: 1.5rem;
+            font-weight: bold;
+            text-decoration: none;
+            letter-spacing: 1px;
+            transition: color 0.3s ease;
+        }
+
+        .navbar-brand:hover {
+            color: #e1f5fe;
+        }
+
+        .navbar-menu {
+            list-style: none;
+            display: flex;
+            gap: 20px;
+            margin: 0;
+            padding: 0;
+        }
+
+        .navbar-menu li a, .navbar-menu li button {
+            color: #fff;
+            text-decoration: none;
+            font-size: 1rem;
+            padding: 8px 15px;
+            border-radius: 20px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .navbar-menu li a:hover, .navbar-menu li button:hover {
+            background: #01579b;
+        }
+
+        .navbar-toggle {
+            display: none;
+            color: #fff;
+            font-size: 1.5rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+
+        /* Main Content Styles */
         .container {
             width: 100%;
-            max-width: 900px;
-            background-color: #ffffff;
+            max-width: 1000px;
+            background: #ffffff;
             border-radius: 20px;
             padding: 30px;
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
         }
 
         .header {
@@ -34,103 +107,127 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 30px;
-            border-bottom: 1px solid #e0e0e0;
-            padding-bottom: 15px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
         }
 
-        .header h2 {
-            font-size: 2rem;
-            color: #1a73e8;
-            margin: 0;
-            font-weight: 600;
+        .header h1 {
+            font-size: 2.2rem;
+            color: #0288d1;
+            font-weight: 700;
+            letter-spacing: 1px;
         }
 
-        .header .back-btn,
-        .header .add-btn {
+        .header button {
             background: none;
             border: none;
-            font-size: 1.8rem;
+            font-size: 2rem;
             cursor: pointer;
-            color: #1a73e8;
-            transition: color 0.3s ease;
+            color: #0288d1;
+            transition: color 0.3s ease, transform 0.3s ease;
         }
 
-        .header .back-btn:hover,
-        .header .add-btn:hover {
-            color: #1557b0;
+        .header button:hover {
+            color: #01579b;
+            transform: scale(1.2);
         }
 
         .exam-list {
-            display: flex;
-            flex-direction: column;
+            display: grid;
             gap: 20px;
         }
 
-        .exam-item {
-            background-color: #f8f9fa;
+        .exam-card {
+            background: #fafafa;
             border-radius: 15px;
-            padding: 20px;
+            padding: 25px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
             transition: all 0.3s ease;
+            border-left: 5px solid #0288d1;
         }
 
-        .exam-item:hover {
+        .exam-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
-            background-color: #e8f0fe;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            background: #e3f2fd;
         }
 
-        .exam-info {
+        .exam-details {
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 10px;
         }
 
-        .exam-info .question-count {
+        .exam-details .exam-id {
             font-size: 0.9rem;
-            color: #666;
+            color: #757575;
             text-transform: uppercase;
             letter-spacing: 1px;
         }
 
-        .exam-info .exam-title {
-            font-size: 1.5rem;
+        .exam-details .exam-title {
+            font-size: 1.6rem;
             font-weight: 600;
-            color: #333;
+            color: #212121;
         }
 
-        .exam-info .exam-time {
+        .exam-details .exam-meta {
+            display: flex;
+            gap: 20px;
             font-size: 1rem;
-            color: #666;
+            color: #616161;
+        }
+
+        .exam-details .exam-meta span {
             display: flex;
             align-items: center;
-            gap: 5px;
+            gap: 6px;
         }
 
-        .exam-info .exam-time::before {
-            content: '⏳';
-            margin-right: 8px;
-            color: #1a73e8;
+        .exam-details .exam-meta span::before {
+            font-size: 1.2rem;
         }
 
-        .exam-info .exam-result {
-            font-size: 1rem;
+        .exam-details .exam-meta .questions::before {
+            content: '📝';
+        }
+
+        .exam-details .exam-meta .time::before {
+            content: '⏱️';
+        }
+
+        .exam-details .exam-status {
+            font-size: 1.1rem;
             font-weight: 500;
+            padding: 5px 15px;
+            border-radius: 20px;
+            text-align: center;
         }
 
-        .exam-info .exam-result.passed {
-            color: #34c759;
+        .exam-details .exam-status.passed {
+            background: #c8e6c9;
+            color: #2e7d32;
         }
 
-        .exam-info .exam-result.failed {
-            color: #ff4444;
+        .exam-details .exam-status.failed {
+            background: #ffcdd2;
+            color: #c62828;
         }
 
-        .exam-action button {
-            padding: 10px 30px;
+        .exam-details .exam-status.pending {
+            background: #fff3e0;
+            color: #f57c00;
+        }
+
+        .exam-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .exam-actions button {
+            padding: 10px 25px;
             border: none;
             border-radius: 25px;
             font-size: 1rem;
@@ -139,34 +236,107 @@
             transition: all 0.3s ease;
         }
 
-        .exam-action .start-btn {
-            background-color: #1a73e8;
+        .exam-actions .start-btn {
+            background: #0288d1;
             color: white;
         }
 
-        .exam-action .start-btn:hover {
-            background-color: #1557b0;
+        .exam-actions .start-btn:hover {
+            background: #01579b;
             transform: scale(1.05);
         }
 
-        .exam-action .view-result-btn {
-            background-color: #34c759;
+        .exam-actions .view-btn {
+            background: #4caf50;
             color: white;
         }
 
-        .exam-action .view-result-btn:hover {
-            background-color: #2ea44f;
+        .exam-actions .view-btn:hover {
+            background: #388e3c;
             transform: scale(1.05);
+        }
+
+        .exam-actions .retake-btn {
+            background: #ff9800;
+            color: white;
+        }
+
+        .exam-actions .retake-btn:hover {
+            background: #f57c00;
+            transform: scale(1.05);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .navbar-container {
+                position: relative;
+            }
+
+            .navbar-menu {
+                display: none;
+                flex-direction: column;
+                width: 100%;
+                background: #0288d1;
+                position: absolute;
+                top: 60px;
+                left: 0;
+                padding: 10px 0;
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            }
+
+            .navbar-menu.active {
+                display: flex;
+            }
+
+            .navbar-menu li a, .navbar-menu li button {
+                padding: 10px 20px;
+                text-align: center;
+            }
+
+            .navbar-toggle {
+                display: block;
+            }
+
+            .exam-card {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+
+            .exam-actions {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .exam-actions button {
+                flex: 1;
+            }
         }
     </style>
 </head>
-
 <body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="navbar-container">
+            <a href="/index.html" class="navbar-brand">Ôn Thi GPLX</a>
+            <button class="navbar-toggle" onclick="$('.navbar-menu').toggleClass('active')">☰</button>
+            <ul class="navbar-menu">
+                <li><a href="/pages/user/theory_category.html">Học Lý Thuyết</a></li>
+                <li><a href="/pages/common/traffic_sign.html">Biển Báo</a></li>
+                <li><a href="/pages/user/exam_list.html">Thi Sát Hạch</a></li>
+                <li><a href="/pages/common/tip.html">Mẹo Thi</a></li>
+                <li><a href="https://www.youtube.com/watch?v=LdCsf3tFne8">Sa Hình</a></li>
+                <li><button id="logout-btn">Đăng Xuất</button></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
     <div class="container">
         <div class="header">
-            <button class="back-btn" onclick="goBack()">←</button>
-            <h2>Thi sát hạch</h2>
-            <button class="add-btn" onclick="addNewExam()">+</button>
+            <button onclick="goBack()">←</button>
+            <h1>Danh Sách Bài Thi</h1>
+            <button onclick="addNewExam()">+</button>
         </div>
         <div class="exam-list" id="exam-list">
             <!-- Danh sách bài thi sẽ được thêm động -->
@@ -181,10 +351,30 @@
 
         $(document).ready(function () {
             loadExams();
+
+            // Xử lý đăng xuất
+            $("#logout-btn").click(function () {
+                if (confirm("Bạn có chắc muốn đăng xuất?")) {
+                    $.ajax({
+                        url: `${ROOT_API}/api/Auth/logout`,
+                        method: "POST",
+                        headers: {
+                            "Authorization": "Bearer " + token
+                        },
+                        success: function () {
+                            localStorage.removeItem("jwtToken");
+                            window.location.href = "/login.html";
+                        },
+                        error: function (xhr, status, error) {
+                            console.error("Lỗi khi đăng xuất:", error);
+                            alert("Có lỗi xảy ra khi đăng xuất. Vui lòng thử lại.");
+                        }
+                    });
+                }
+            });
         });
 
         function loadExams() {
-            console.log('dsadsa')
             $.ajax({
                 url: `${ROOT_API}/api/MockExam/getByUser/${userId}`,
                 method: 'GET',
@@ -198,7 +388,7 @@
                 },
                 error: function (xhr, status, error) {
                     console.error('Lỗi khi tải danh sách bài thi:', error);
-                    $('#exam-list').html('<p style="color: red;">Có lỗi xảy ra khi tải danh sách bài thi. Vui lòng thử lại sau.</p>');
+                    $('#exam-list').html('<p style="color: red; text-align: center;">Có lỗi xảy ra khi tải danh sách bài thi. Vui lòng thử lại sau.</p>');
                 }
             });
         }
@@ -207,26 +397,32 @@
             let html = '';
             exams.forEach((exam, index) => {
                 const examNumber = index + 1;
-                const timeRemaining = '19 phút'; // Thời gian mặc định
-
-                // Kiểm tra trạng thái bài thi
                 const isCompleted = exam.status === "completed";
-                const resultText = isCompleted ? `Điểm: ${exam.totalScore}/25 - ${exam.isPassed ? 'Đạt' : 'Không đạt'}` : '';
-                const resultClass = isCompleted ? (exam.isPassed ? 'passed' : 'failed') : '';
-                console.log(exam)
+                const statusText = isCompleted ? (exam.isPassed ? 'Đạt' : 'Không đạt') : 'Chưa hoàn thành';
+                const statusClass = isCompleted ? (exam.isPassed ? 'passed' : 'failed') : 'pending';
+
                 html += `
-                    <div class="exam-item">
-                        <div class="exam-info">
-                            <span class="question-count">25 câu hỏi</span>
-                            <span class="exam-title">Đề số ${examNumber}</span>
-                            <span class="exam-time">${timeRemaining}</span>
-                            ${isCompleted ? `<span class="exam-result ${resultClass}">${resultText}</span>` : ''}
+                    <div class="exam-card">
+                        <div class="exam-details">
+                            <span class="exam-id">Đề số ${examNumber}</span>
+                            <span class="exam-title">Thi sát hạch bằng lái xe máy</span>
+                            <div class="exam-meta">
+                                <span class="questions">25 câu</span>
+                                <span class="time">19 phút</span>
+                            </div>
+                            <span class="exam-status ${statusClass}">
+                                ${isCompleted ? `Điểm: ${exam.totalScore}/25 - ${statusText}` : statusText}
+                            </span>
                         </div>
-                        <div class="exam-action">
-                            <button class="${isCompleted ? 'view-result-btn' : 'start-btn'}" 
+                        <div class="exam-actions">
+                            <button class="${isCompleted ? 'view-btn' : 'start-btn'}" 
                                     onclick="${isCompleted ? `viewExamResult(${exam.mockExamId})` : `loadExam(${exam.mockExamId})`}">
                                 ${isCompleted ? 'Xem chi tiết' : 'Bắt đầu'}
                             </button>
+                            ${isCompleted ? `
+                                <button class="retake-btn" onclick="retakeExam(${exam.mockExamId})">
+                                    Làm lại
+                                </button>` : ''}
                         </div>
                     </div>
                 `;
@@ -240,6 +436,26 @@
 
         function viewExamResult(examId) {
             window.location.href = `exam_result.html?examId=${examId}`;
+        }
+
+        function retakeExam(mockExamId) {
+            console.log(mockExamId);
+            $.ajax({
+                url: `${ROOT_API}/api/MockExam/retake/${mockExamId}`,
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + token
+                },
+                contentType: "application/json",
+                success: function (response) {
+                    console.log("Đặt lại bài thi thành công:", response);
+                    window.location.href = `exam_question.html?examId=${mockExamId}`;
+                },
+                error: function (xhr, status, error) {
+                    console.error('Lỗi khi đặt lại bài thi:', error);
+                    alert('Có lỗi xảy ra khi đặt lại bài thi. Vui lòng thử lại.');
+                }
+            });
         }
 
         function goBack() {
@@ -264,7 +480,7 @@
                 data: JSON.stringify(data),
                 success: function (response) {
                     console.log("Tạo bài thi mới thành công:", response);
-                    loadExams(); // Tải lại danh sách
+                    loadExams();
                 },
                 error: function (xhr, status, error) {
                     console.error('Lỗi khi tạo bài thi mới:', error);
@@ -274,5 +490,4 @@
         }
     </script>
 </body>
-
 </html>
