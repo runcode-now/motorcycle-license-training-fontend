@@ -5,14 +5,171 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Sign Up Form by Colorlib</title>
-
+    <title>Đăng kí</title>
     <link rel="stylesheet" href="fonts/material-icon/css/material-design-iconic-font.min.css">
-
-    <link rel="stylesheet" href="../../css/style.css">
     <script src="https://code.jquery.com/jquery-3.7.1.js"
         integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/jwt-decode@3.1.2/build/jwt-decode.min.js"></script>
+    <style>
+        /* Reset default styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #f4f7fb 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Main container */
+        .main {
+            width: 100%;
+            padding: 20px;
+        }
+
+        /* Sign-in section */
+        .sign-in .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: #fff;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        /* Sign-in content */
+        .signin-content {
+            display: flex;
+            width: 100%;
+        }
+
+        /* Sign-in image */
+        .signin-image {
+            flex: 1;
+            background: #f8f9fd;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .signin-image figure {
+            margin-bottom: 20px;
+        }
+
+        .signin-image img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+        }
+
+        .signup-image-link {
+            display: inline-block;
+            margin-top: 20px;
+            color: #007bff;
+            text-decoration: none;
+            font-size: 16px;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .signup-image-link:hover {
+            color: #0056b3;
+            text-decoration: underline;
+        }
+
+        /* Sign-in form */
+        .signin-form {
+            flex: 1;
+            padding: 40px;
+        }
+
+        .form-title {
+            font-size: 28px;
+            color: #333;
+            margin-bottom: 30px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        /* Form group */
+        .form-group {
+            position: relative;
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            position: absolute;
+            top: 50%;
+            left: 15px;
+            transform: translateY(-50%);
+            color: #666;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px 12px 45px;
+            border: 1px solid #ddd;
+            border-radius: 25px;
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+        }
+
+        .form-group input::placeholder {
+            color: #999;
+        }
+
+        /* Submit button */
+        .form-button .form-submit {
+            width: 100%;
+            padding: 12px;
+            background: #007bff;
+            border: none;
+            border-radius: 25px;
+            color: #fff;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .form-button .form-submit:hover {
+            background: #0056b3;
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .signin-content {
+                flex-direction: column;
+            }
+
+            .signin-image,
+            .signin-form {
+                flex: none;
+                width: 100%;
+            }
+
+            .signin-image {
+                padding: 20px;
+            }
+
+            .signin-form {
+                padding: 30px 20px;
+            }
+        }
+    </style>
 </head>
 
 <body>
@@ -50,7 +207,7 @@
     </div>
 
     <script>
-        const ROOT_API = 'http://localhost:5170';
+        const ROOT_API = 'http://103.179.185.149:8080';
 
         $(document).ready(function () {
             $('#login-form').submit(function (event) {
@@ -92,7 +249,7 @@
                     const decodedToken = jwt_decode(token);
                     const userId = decodedToken['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'];
                     console.log('User ID:', userId);
-                    
+
                     window.location.href = '../../home.html';
 
                 },

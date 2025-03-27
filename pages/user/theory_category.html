@@ -76,11 +76,10 @@
     </div>
 
     <script>
-        const ROOT_API = 'http://localhost:5170'
+        const ROOT_API = 'http://103.179.185.149:8080'
         var token = localStorage.getItem('jwtToken');
-
         $.ajax({
-            url: `${ROOT_API}/api/Categories/getCategoryByType/theory`,
+            url: `${ROOT_API}/api/Category/getCategoryByType/theory`,
             method: 'GET',
             headers: {
                 'Authorization': 'Bearer ' + token
