@@ -174,7 +174,7 @@
     </div>
 
     <script>
-        const ROOT_API = 'http://localhost:5170';
+        const ROOT_API = 'http://103.179.185.149:8080';
         const token = localStorage.getItem('jwtToken');
         const decodedToken = jwt_decode(token);
         const userId = decodedToken['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'];
