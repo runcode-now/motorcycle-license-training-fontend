@@ -159,21 +159,10 @@
         $(document).ready(function () {
             $("#logout-btn").click(function () {
                 if (confirm("Bạn có chắc muốn đăng xuất?")) {
-                    $.ajax({
-                        url: "http://103.179.185.149:8080/api/Auth/logout", // Địa chỉ API đăng xuất
-                        method: "POST",
-                        headers: {
-                            "Authorization": "Bearer " + localStorage.getItem("jwtToken")
-                        },
-                        success: function () {
-                            localStorage.removeItem("jwtToken"); // Xóa token ở client
-                            window.location.href = "/login.html"; // Chuyển về trang đăng nhập
-                        },
-                        error: function (xhr, status, error) {
-                            console.error("Lỗi khi đăng xuất:", error);
-                            alert("Có lỗi xảy ra khi đăng xuất. Vui lòng thử lại.");
-                        }
-                    });
+                    // Xóa token trong localStorage
+                    localStorage.removeItem("jwtToken");
+                    // Chuyển hướng về trang đăng nhập
+                    window.location.href = "pages/authentication/login.html";
                 }
             });
         });
